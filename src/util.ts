@@ -20,7 +20,8 @@ interface AbstractNode {
 
 export function getNodeRecord(
   node: AbstractNode,
-  loopChildren = false,
+  loopChildren: boolean,
+  postRecord?: (record: SVGNodeRecord) => void,
 ): SVGNodeRecord {
   let subRecords: SVGNodeRecord[] = [];
   if (loopChildren) {
@@ -29,9 +30,15 @@ export function getNodeRecord(
     );
   }
 
-  return {
+  const record = {
     tagName: node.tagName,
     attributes: getAttributes(node),
     children: subRecords,
   };
+
+  if (postRecord) {
+    postRecord(record);
+  }
+
+  return record;
 }

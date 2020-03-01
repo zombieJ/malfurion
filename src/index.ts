@@ -1,12 +1,23 @@
 import { getNodeRecord } from './util';
 import { SVGEntity, SVGNodeEntity, SVGBox, SVGNodeRecord } from './interface';
 
+let uuid = 0;
+
 function analysisNodes(
   nodes: SVGGraphicsElement[],
   entity: SVGEntity,
   isDefs: boolean = false,
 ): SVGNodeEntity[] {
   const nodeEntities: SVGNodeEntity[] = [];
+
+  function postRecord(record: SVGNodeRecord) {
+    if (record.attributes.id) {
+      const newId = `MALFURION_${uuid}`;
+      entity.ids[record.attributes.id] = newId;
+      record.attributes.id = newId;
+      uuid += 1;
+    }
+  }
 
   nodes.forEach(node => {
     const { tagName, children } = node;
@@ -17,7 +28,7 @@ function analysisNodes(
         return;
 
       case 'mask':
-        entity.defs.push(getNodeRecord(node, true));
+        entity.defs.push(getNodeRecord(node, true, postRecord));
         return;
 
       case 'defs':
@@ -30,10 +41,10 @@ function analysisNodes(
 
       default:
         if (isDefs) {
-          entity.defs.push(getNodeRecord(node, true));
+          entity.defs.push(getNodeRecord(node, true, postRecord));
         } else {
           nodeEntities.push({
-            ...getNodeRecord(node),
+            ...getNodeRecord(node, false, postRecord),
             rect: node.getBBox(),
             children: analysisNodes(
               Array.from(children) as SVGGraphicsElement[],
@@ -89,6 +100,11 @@ class Malfurion {
   }
 
   getSVG = () => {
+    // Create id cache
+    const idCacheList = Object.keys(this.entity.ids)
+      .sort((id1, id2) => id2.length - id1.length)
+      .map(id => [id, this.entity.ids[id]]);
+
     if (Malfurion.DEBUG) {
       console.time('getSVG');
     }
@@ -106,7 +122,14 @@ class Malfurion {
 
         // Attributes
         Object.keys(attributes).forEach(key => {
-          const value = attributes[key];
+          let value = attributes[key];
+
+          // Replace value with real id
+          if (value.includes('#')) {
+            idCacheList.forEach(([id, replaceId]) => {
+              value = value.replace(`#${id}`, `#${replaceId}`);
+            });
+          }
 
           if (key.includes('xlink:')) {
             ele.setAttributeNS(
