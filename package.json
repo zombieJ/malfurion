@@ -35,8 +35,7 @@
     "test": "father test",
     "coverage": "father test --coverage"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/classnames": "^2.2.9",
     "@types/react": "^16.9.2",
