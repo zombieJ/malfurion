@@ -1,3 +1,5 @@
+import Malfurion from '.';
+
 export interface SVGBox {
   x: number;
   y: number;
@@ -20,4 +22,8 @@ export interface SVGEntity {
   defs: SVGNodeRecord[];
   nodes: SVGNodeEntity[];
   ids: Record<string, string>;
+}
+
+export interface SVGEvents {
+  onClick?: (e: MouseEvent, instance: Malfurion) => void;
 }

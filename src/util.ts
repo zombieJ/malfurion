@@ -42,3 +42,8 @@ export function getNodeRecord(
 
   return record;
 }
+
+export function getBox(ele: SVGGraphicsElement) {
+  const { x, y, width, height } = ele.getBBox();
+  return { x, y, width, height };
+}

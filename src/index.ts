@@ -1,7 +1,15 @@
-import { getNodeRecord } from './util';
-import { SVGEntity, SVGNodeEntity, SVGBox, SVGNodeRecord } from './interface';
+import { getNodeRecord, getBox } from './util';
+import {
+  SVGEntity,
+  SVGNodeEntity,
+  SVGBox,
+  SVGNodeRecord,
+  SVGEvents,
+} from './interface';
 
 let uuid = 0;
+
+const MALFURION_INSTANCE = '__Malfurion_Instance__';
 
 function analysisNodes(
   nodes: SVGGraphicsElement[],
@@ -45,7 +53,7 @@ function analysisNodes(
         } else {
           nodeEntities.push({
             ...getNodeRecord(node, false, postRecord),
-            rect: node.getBBox(),
+            rect: getBox(node),
             children: analysisNodes(
               Array.from(children) as SVGGraphicsElement[],
               entity,
@@ -78,6 +86,21 @@ class Malfurion {
 
   public static DEBUG: boolean = false;
 
+  static getInstance = (svg: SVGSVGElement): Malfurion =>
+    (svg as any)[MALFURION_INSTANCE];
+
+  static getElement = (svg: any, path: number[]): SVGElement => {
+    let element: any = svg;
+
+    path.forEach(index => {
+      if (element) {
+        element = element.children[index];
+      }
+    });
+
+    return element;
+  };
+
   constructor(source: string) {
     if (Malfurion.DEBUG) {
       console.time('parseSVG');
@@ -89,17 +112,18 @@ class Malfurion {
 
     // Calculate rect
     this.entity = analysisSVG(svg.children);
-    this.rect = svg.getBBox();
+    this.rect = getBox(svg);
 
     // Clean up
     document.body.removeChild(svg);
 
     if (Malfurion.DEBUG) {
       console.timeEnd('parseSVG');
+      console.log('Entity:', this.entity);
     }
   }
 
-  getSVG = () => {
+  getSVG = (events: SVGEvents = {}) => {
     // Create id cache
     const idCacheList = Object.keys(this.entity.ids)
       .sort((id1, id2) => id2.length - id1.length)
@@ -108,9 +132,11 @@ class Malfurion {
     if (Malfurion.DEBUG) {
       console.time('getSVG');
     }
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
+    // Render svg
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    (svg as any)[MALFURION_INSTANCE] = this;
     svg.appendChild(defs);
 
     function fillNodes(holder: Element, nodes: SVGNodeRecord[]) {
@@ -156,7 +182,57 @@ class Malfurion {
       console.timeEnd('getSVG');
     }
 
+    // Events
+    if (events.onClick) {
+      svg.addEventListener('click', e => {
+        events.onClick!(e, this);
+      });
+    }
+
     return svg;
+  };
+
+  getRect = () => this.rect;
+
+  getPath = (element: any): number[] => {
+    const path: number[] = [];
+    let parent: any = element.parentNode;
+    let current = element;
+
+    while (parent) {
+      const index = Array.from(parent.children).indexOf(current);
+      path.unshift(index);
+
+      current = parent;
+      parent = parent.parentNode;
+
+      if (current[MALFURION_INSTANCE]) {
+        break;
+      }
+    }
+
+    return path;
+  };
+
+  getBox = (path: number[]): SVGBox | null => {
+    if (!path.length) {
+      return this.rect;
+    }
+
+    let { nodes } = this.entity;
+
+    for (let i = 0; i < path.length; i += 1) {
+      const index = i === 0 ? 0 : path[i];
+      const current = nodes[index];
+
+      if (i === path.length - 1) {
+        return current.rect;
+      }
+
+      nodes = current.children;
+    }
+
+    return null;
   };
 }
 

@@ -15,7 +15,16 @@ export default function App() {
   React.useEffect(() => {
     Malfurion.DEBUG = true;
     const malfurion = new Malfurion(plantTxt);
-    svgRef.current!.appendChild(malfurion.getSVG());
+    svgRef.current!.appendChild(
+      malfurion.getSVG({
+        onClick: ({ target }, instance) => {
+          const path = instance.getPath(target);
+          const rect = instance.getBox(path);
+          console.log('>>>', rect);
+          setRectProps(rect!);
+        },
+      }),
+    );
     Malfurion.DEBUG = false;
   }, []);
 
@@ -26,9 +35,9 @@ export default function App() {
         height={2000}
         viewBox="0 0 2000 2000"
         style={{ width: 500, height: 500 }}
-        onClick={({ target }) => {
-          setRectProps((target as SVGSVGElement).getBBox());
-        }}
+        // onClick={({ target }) => {
+        //   setRectProps((target as SVGSVGElement).getBBox());
+        // }}
       >
         <g ref={svgRef} />
         <rect
