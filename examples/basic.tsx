@@ -13,8 +13,10 @@ export default function App() {
   });
 
   React.useEffect(() => {
+    Malfurion.DEBUG = true;
     const malfurion = new Malfurion(plantTxt);
     svgRef.current!.appendChild(malfurion.getSVG());
+    Malfurion.DEBUG = false;
   }, []);
 
   return (

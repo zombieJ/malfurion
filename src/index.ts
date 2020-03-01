@@ -1,5 +1,5 @@
 import { getNodeRecord } from './util';
-import { SVGEntity, SVGNodeEntity } from './interface';
+import { SVGEntity, SVGNodeEntity, SVGBox, SVGNodeRecord } from './interface';
 
 function analysisNodes(
   nodes: SVGGraphicsElement[],
@@ -49,6 +49,7 @@ function analysisNodes(
 
 function analysisSVG(list: any): SVGEntity {
   const entity: SVGEntity = {
+    ids: {},
     defs: [],
     nodes: [],
   };
@@ -62,7 +63,14 @@ function analysisSVG(list: any): SVGEntity {
 class Malfurion {
   private entity: SVGEntity;
 
+  private rect: SVGBox;
+
+  public static DEBUG: boolean = false;
+
   constructor(source: string) {
+    if (Malfurion.DEBUG) {
+      console.time('parseSVG');
+    }
     const holder = document.createElement('div');
     holder.innerHTML = source;
     const svg = holder.querySelector('svg')!;
@@ -70,15 +78,63 @@ class Malfurion {
 
     // Calculate rect
     this.entity = analysisSVG(svg.children);
-    console.error('>>>', this.entity);
-
-    console.error('SSS:', svg.getBBox());
+    this.rect = svg.getBBox();
 
     // Clean up
     document.body.removeChild(svg);
+
+    if (Malfurion.DEBUG) {
+      console.timeEnd('parseSVG');
+    }
   }
 
-  getSVG = () => document.createElement('svg');
+  getSVG = () => {
+    if (Malfurion.DEBUG) {
+      console.time('getSVG');
+    }
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svg.appendChild(defs);
+
+    function fillNodes(holder: Element, nodes: SVGNodeRecord[]) {
+      nodes.forEach(({ tagName, attributes, children }) => {
+        const ele = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          tagName,
+        );
+
+        // Attributes
+        Object.keys(attributes).forEach(key => {
+          const value = attributes[key];
+
+          if (key.includes('xlink:')) {
+            ele.setAttributeNS(
+              'http://www.w3.org/1999/xlink',
+              'xlink:href',
+              value,
+            );
+          } else {
+            ele.setAttribute(key, value);
+          }
+        });
+
+        // Children
+        fillNodes(ele, children);
+
+        holder.appendChild(ele);
+      });
+    }
+
+    fillNodes(defs, this.entity.defs);
+    fillNodes(svg, this.entity.nodes);
+
+    if (Malfurion.DEBUG) {
+      console.timeEnd('getSVG');
+    }
+
+    return svg;
+  };
 }
 
 export default Malfurion;
