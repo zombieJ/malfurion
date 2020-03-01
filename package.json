@@ -1,14 +1,9 @@
 {
-  "name": "rc-footer",
-  "version": "0.6.2",
-  "description": "Pretty Footer react component used in used in ant.design",
+  "name": "malfurion",
+  "version": "0.0.0",
+  "description": "SVG control lib",
   "keywords": [
-    "react",
-    "react-component",
-    "react-footer",
-    "footer",
-    "antd",
-    "ant-design"
+    "svg"
   ],
   "main": "./lib/index",
   "module": "./es/index",
@@ -19,13 +14,13 @@
     "lib",
     "dist"
   ],
-  "homepage": "https://react-component.github.io/footer",
+  "homepage": "https://zombiej.github.io/malfurion",
   "repository": {
     "type": "git",
-    "url": "git@github.com:react-component/footer.git"
+    "url": "git@github.com:zombiej/malfurion.git"
   },
   "bugs": {
-    "url": "http://github.com/react-component/footer/issues"
+    "url": "http://github.com/zombiej/malfurion/issues"
   },
   "license": "MIT",
   "scripts": {
@@ -41,14 +36,12 @@
     "coverage": "father test --coverage"
   },
   "dependencies": {
-    "classnames": "^2.2.1"
   },
   "devDependencies": {
     "@types/classnames": "^2.2.9",
     "@types/react": "^16.9.2",
     "@types/react-dom": "^16.9.0",
     "@umijs/fabric": "^1.1.10",
-    "coveralls": "^3.0.6",
     "cross-env": "^6.0.0",
     "enzyme": "^3.0.0",
     "enzyme-adapter-react-16": "^1.0.1",
@@ -60,13 +53,8 @@
     "np": "^5.1.0",
     "prettier": "^1.18.2",
     "pretty-quick": "^2.0.1",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
-    "react-test-renderer": "^16.0.0"
-  },
-  "peerDependencies": {
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0"
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0"
   },
   "husky": {
     "hooks": {
