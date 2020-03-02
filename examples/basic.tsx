@@ -6,9 +6,10 @@ import Malfurion from '../src';
 const svgText = plantTXT;
 // const svgText = `
 // <svg>
-//   <g transform="translate(11, 33)">
-//     <g transform="translate(10, 20)">
+//   <g transform="translate(150, 100)">
+//     <g transform="rotate(45 0 0)">
 //       <rect x="0" y="0" width="100" height="100" fill="green" />
+//       <circle cx="50" cy="50" r="10" fill="blue" />
 //     </g>
 //   </g>
 // </svg>
