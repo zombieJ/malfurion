@@ -45,5 +45,8 @@ export function getNodeRecord(
 
 export function getBox(ele: SVGGraphicsElement) {
   const { x, y, width, height } = ele.getBBox();
-  return { x, y, width, height };
+  const { a, b, c, d, e, f } = ele.getCTM()!;
+
+  console.log('>>>', a, b, c, d, e, f, ele);
+  return { x: x + e, y: y + f, width, height };
 }

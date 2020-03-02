@@ -24,6 +24,11 @@ export interface SVGEntity {
   ids: Record<string, string>;
 }
 
+interface MockEvent {
+  target: SVGGraphicsElement;
+  currentTarget: SVGGraphicsElement;
+}
+
 export interface SVGEvents {
-  onClick?: (e: MouseEvent, instance: Malfurion) => void;
+  onClick?: (e: MockEvent, instance: Malfurion) => void;
 }

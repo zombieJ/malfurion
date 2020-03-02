@@ -1,7 +1,18 @@
 import '../assets/index.less';
 import React from 'react';
-import plantTxt from './svg/Plant';
+import plantTXT from './svg/Plant';
 import Malfurion from '../src';
+
+const svgText = plantTXT;
+// const svgText = `
+// <svg>
+//   <g transform="translate(11, 33)">
+//     <g transform="translate(10, 20)">
+//       <rect x="0" y="0" width="100" height="100" fill="green" />
+//     </g>
+//   </g>
+// </svg>
+// `;
 
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
@@ -14,13 +25,14 @@ export default function App() {
 
   React.useEffect(() => {
     Malfurion.DEBUG = true;
-    const malfurion = new Malfurion(plantTxt);
+    const malfurion = new Malfurion(svgText);
     svgRef.current!.appendChild(
       malfurion.getSVG({
-        onClick: ({ target }, instance) => {
+        onClick: ({ target, currentTarget }, instance) => {
           const path = instance.getPath(target);
           const rect = instance.getBox(path);
-          console.log('>>>', rect);
+          console.log('>>>', target, currentTarget);
+          console.log('-', rect);
           setRectProps(rect!);
         },
       }),
