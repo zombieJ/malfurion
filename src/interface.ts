@@ -25,10 +25,12 @@ export interface SVGEntity {
 }
 
 interface MockEvent {
-  target: SVGGraphicsElement;
-  currentTarget: SVGGraphicsElement;
+  target: SVGGraphicsElement | SVGSVGElement;
+  currentTarget: SVGGraphicsElement | SVGSVGElement;
 }
 
 export interface SVGEvents {
   onClick?: (e: MockEvent, instance: Malfurion) => void;
+  onMouseEnter?: (e: MockEvent, instance: Malfurion) => void;
+  onMouseLeave?: (e: MockEvent, instance: Malfurion) => void;
 }

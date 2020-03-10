@@ -4,7 +4,7 @@ import plantTXT from './svg/Plant';
 import Malfurion from '../src';
 
 const svgText = plantTXT;
-// const svgText = `
+// const anotherText = `
 // <svg>
 //   <g transform="translate(150, 100)">
 //     <g transform="rotate(45 0 0)">
@@ -17,29 +17,55 @@ const svgText = plantTXT;
 
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
-  const [rectProps, setRectProps] = React.useState({
-    width: 550.7053833007812,
-    height: 895.8939208984375,
-    x: 234.9997100830078,
-    y: 63.06151580810547,
-  });
+  const [rectProps, setRectProps] = React.useState<object | null>(null);
+  const [current, setCurrent] = React.useState<Malfurion | null>(null);
+  const [currentPath, setCurrentPath] = React.useState<number[]>([]);
+
+  const proxyRef = React.useRef({ current, currentPath });
+  proxyRef.current = {
+    current,
+    currentPath,
+  };
 
   React.useEffect(() => {
     Malfurion.DEBUG = true;
-    const malfurion = new Malfurion(svgText);
+    const plant = new Malfurion(svgText);
     svgRef.current!.appendChild(
-      malfurion.getSVG({
+      plant.getSVG({
         onClick: ({ target, currentTarget }, instance) => {
-          const path = instance.getPath(target);
-          const rect = instance.getBox(path);
           console.log('>>>', target, currentTarget);
-          console.log('-', rect);
-          setRectProps(rect!);
+
+          if (proxyRef.current.current !== instance) {
+            setCurrent(instance);
+            setCurrentPath([]);
+          } else {
+            const path = instance.getPath(target);
+
+            // Need to get common shared path
+            const commonPath = [];
+            for (let i = 0; i < proxyRef.current.currentPath.length; i += 1) {
+              const pos = proxyRef.current.currentPath[i];
+
+              if (pos === path[i]) {
+                commonPath.push(pos);
+              } else {
+                break;
+              }
+            }
+
+            setCurrentPath(path.slice(0, commonPath.length + 1));
+          }
         },
       }),
     );
     Malfurion.DEBUG = false;
   }, []);
+
+  React.useEffect(() => {
+    if (current) {
+      setRectProps(current.getBox(currentPath)!);
+    }
+  }, [current, currentPath]);
 
   return (
     <div>

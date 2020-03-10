@@ -184,15 +184,23 @@ class Malfurion {
 
     // Events
     if (events.onClick) {
-      svg.addEventListener('click', e => {
+      svg.addEventListener('click', (e: any) => {
         events.onClick!(e, this);
+      });
+    }
+    if (events.onMouseEnter) {
+      svg.addEventListener('mouseEnter', (e: any) => {
+        events.onMouseEnter!(e, this);
+      });
+    }
+    if (events.onMouseLeave) {
+      svg.addEventListener('mouseLeave', (e: any) => {
+        events.onMouseLeave!(e, this);
       });
     }
 
     return svg;
   };
-
-  getRect = () => this.rect;
 
   getPath = (element: any): number[] => {
     const path: number[] = [];
@@ -214,8 +222,8 @@ class Malfurion {
     return path;
   };
 
-  getBox = (path: number[]): SVGBox | null => {
-    if (!path.length) {
+  getBox = (path?: number[]): SVGBox | null => {
+    if (!path || !path.length) {
       return this.rect;
     }
 
