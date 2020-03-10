@@ -15,9 +15,17 @@ const svgText = plantTXT;
 // </svg>
 // `;
 
-function useElementSelection(): [
+interface ProxyRef {
+  current: Malfurion | null;
+  currentPath: number[];
+}
+
+function useElementSelection(
+  overwriteProxyRef: React.RefObject<ProxyRef> = { current: null },
+): [
   SVGBox | null,
   (instance: Malfurion, target: SVGGraphicsElement) => void,
+  React.RefObject<ProxyRef>,
 ] {
   const [rectProps, setRectProps] = React.useState<SVGBox | null>(null);
   const [current, setCurrent] = React.useState<Malfurion | null>(null);
@@ -26,6 +34,7 @@ function useElementSelection(): [
   proxyRef.current = {
     current,
     currentPath,
+    ...overwriteProxyRef.current,
   };
 
   React.useEffect(() => {
@@ -57,13 +66,14 @@ function useElementSelection(): [
     }
   }
 
-  return [rectProps, updateSelection];
+  return [rectProps, updateSelection, proxyRef];
 }
 
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
 
-  const [selectReact, updateSelection] = useElementSelection();
+  const [selectReact, updateSelection, selectionRef] = useElementSelection();
+  const [hoverReact, updateHoverSelection] = useElementSelection(selectionRef);
 
   React.useEffect(() => {
     Malfurion.DEBUG = true;
@@ -75,8 +85,8 @@ export default function App() {
 
           updateSelection(instance, target);
         },
-        onElementEnter: ({ target }) => {
-          console.log('enter', target);
+        onElementEnter: ({ target }, instance) => {
+          updateHoverSelection(instance, target);
         },
         onElementLeave: () => {
           console.log('leave');
@@ -100,6 +110,12 @@ export default function App() {
           fill="transparent"
           style={{ pointerEvents: 'none' }}
           {...selectReact}
+        />
+        <rect
+          stroke="blue"
+          fill="transparent"
+          style={{ pointerEvents: 'none' }}
+          {...hoverReact}
         />
       </svg>
     </div>
