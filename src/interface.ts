@@ -33,4 +33,6 @@ export interface SVGEvents {
   onClick?: (e: MockEvent, instance: Malfurion) => void;
   onMouseEnter?: (e: MockEvent, instance: Malfurion) => void;
   onMouseLeave?: (e: MockEvent, instance: Malfurion) => void;
+  onElementEnter?: (e: MockEvent, instance: Malfurion) => void;
+  onElementLeave?: (e: MockEvent, instance: Malfurion) => void;
 }

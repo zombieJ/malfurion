@@ -7,6 +7,8 @@ import {
   SVGEvents,
 } from './interface';
 
+export { SVGBox };
+
 let uuid = 0;
 
 const MALFURION_INSTANCE = '__Malfurion_Instance__';
@@ -189,13 +191,23 @@ class Malfurion {
       });
     }
     if (events.onMouseEnter) {
-      svg.addEventListener('mouseEnter', (e: any) => {
+      svg.addEventListener('mouseenter', (e: any) => {
         events.onMouseEnter!(e, this);
       });
     }
     if (events.onMouseLeave) {
-      svg.addEventListener('mouseLeave', (e: any) => {
+      svg.addEventListener('mouseleave', (e: any) => {
         events.onMouseLeave!(e, this);
+      });
+    }
+    if (events.onElementEnter) {
+      svg.addEventListener('mouseover', (e: any) => {
+        events.onElementEnter!(e, this);
+      });
+    }
+    if (events.onElementLeave) {
+      svg.addEventListener('mouseout', (e: any) => {
+        events.onElementLeave!(e, this);
       });
     }
 
