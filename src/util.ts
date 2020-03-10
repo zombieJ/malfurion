@@ -1,4 +1,5 @@
 import { SVGNodeRecord, SVGEntity, SVGNodeEntity, SVGBox } from './interface';
+import Matrix from './utils/matrix';
 
 export function getAttributes({
   attributes,
@@ -43,18 +44,6 @@ export function getNodeRecord(
   return record;
 }
 
-type Matrix = [number, number, number, number, number, number];
-
-function transformPoint(
-  { x, y }: { x: number; y: number },
-  [a, b, c, d, e, f]: Matrix,
-) {
-  return {
-    x: a * x + c * y + e,
-    y: b * x + d * y + f,
-  };
-}
-
 export function getBox(ele: SVGGraphicsElement, pure: boolean = false) {
   const { x, y, width, height } = ele.getBBox();
 
@@ -63,15 +52,27 @@ export function getBox(ele: SVGGraphicsElement, pure: boolean = false) {
   }
 
   const { a, b, c, d, e, f } = ele.getCTM()!;
-  const matrix: Matrix = [a, b, c, d, e, f];
+  const matrix: Matrix = Matrix.fromTransform([a, b, c, d, e, f]);
 
-  const leftTop = transformPoint({ x, y }, matrix);
-  const rightTop = transformPoint({ x: x + width, y }, matrix);
-  const leftBottom = transformPoint({ x, y: y + height }, matrix);
-  const rightBottom = transformPoint({ x: x + width, y: y + height }, matrix);
+  const leftTop = matrix.multiple(new Matrix(1, 3, [x, y, 1]));
+  const rightTop = matrix.multiple(new Matrix(1, 3, [x + width, y, 1]));
+  const leftBottom = matrix.multiple(new Matrix(1, 3, [x, y + height, 1]));
+  const rightBottom = matrix.multiple(
+    new Matrix(1, 3, [x + width, y + height, 1]),
+  );
 
-  const xs = [leftTop.x, rightTop.x, leftBottom.x, rightBottom.x];
-  const ys = [leftTop.y, rightTop.y, leftBottom.y, rightBottom.y];
+  const xs = [
+    leftTop.get(0, 0),
+    rightTop.get(0, 0),
+    leftBottom.get(0, 0),
+    rightBottom.get(0, 0),
+  ];
+  const ys = [
+    leftTop.get(0, 1),
+    rightTop.get(0, 1),
+    leftBottom.get(0, 1),
+    rightBottom.get(0, 1),
+  ];
 
   const left = Math.min(...xs);
   const right = Math.max(...xs);

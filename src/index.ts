@@ -218,6 +218,9 @@ class Malfurion {
 
   getPath = (element: any): number[] | null => this.pathCache.getPath(element);
 
+  getElement = (path: number[]): SVGGraphicsElement | null =>
+    this.pathCache.getElement(path) as SVGGraphicsElement;
+
   getBox = (path?: number[]): SVGBox | null => {
     if (!path || !path.length) {
       return this.rect;
@@ -239,8 +242,20 @@ class Malfurion {
     return null;
   };
 
-  rotate = (path: number[], rotate: number) => {
-    console.log('>>>', path, rotate);
+  rotate = (path: number[], angle: number) => {
+    console.log('Rotate:', path, angle);
+    const ele = this.getElement(path);
+
+    if (ele) {
+      const deg = (angle / 180) * Math.PI;
+      // ele.setAttribute('transform', `rotate(${rotate})`);
+      ele.setAttribute(
+        'transform',
+        `matrix(${Math.cos(deg)}, ${Math.sin(deg)}, ${-Math.sin(
+          deg,
+        )}, ${Math.cos(deg)}, 0, 0)`,
+      );
+    }
   };
 }
 

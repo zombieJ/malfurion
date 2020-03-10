@@ -115,7 +115,7 @@ export default function App() {
         type="button"
         onClick={() => {
           if (selection.instance) {
-            selection.instance.rotate(selection.path, 45);
+            selection.instance.rotate(selection.path, -30);
           }
         }}
       >
@@ -127,7 +127,7 @@ export default function App() {
         height={2000}
         viewBox="0 0 2000 2000"
         style={{
-          width: 500,
+          width: 800,
           height: 500,
           display: 'block',
           background: 'rgba(255, 0, 0, 0.1)',
