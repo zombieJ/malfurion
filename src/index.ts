@@ -4,7 +4,8 @@ import {
   SVGNodeEntity,
   SVGBox,
   SVGNodeRecord,
-  SVGEvents,
+  MalfurionEventHandler,
+  MalfurionEventType,
 } from './interface';
 
 export { SVGBox };
@@ -104,6 +105,16 @@ class Malfurion {
 
   public debug: boolean = false;
 
+  private clickEventHandlers = new Set<MalfurionEventHandler>();
+
+  private mouseEnterEventHandlers = new Set<MalfurionEventHandler>();
+
+  private mouseLeaveEventHandlers = new Set<MalfurionEventHandler>();
+
+  private elementEnterEventHandlers = new Set<MalfurionEventHandler>();
+
+  private elementLeaveEventHandlers = new Set<MalfurionEventHandler>();
+
   static getInstance = (svg: SVGSVGElement): Malfurion =>
     (svg as any)[MALFURION_INSTANCE];
 
@@ -133,7 +144,32 @@ class Malfurion {
     document.body.removeChild(svg);
   }
 
-  getSVG = (events: SVGEvents = {}) => {
+  addEventListener = (
+    event: MalfurionEventType,
+    callback: MalfurionEventHandler,
+  ) => {
+    switch (event) {
+      case 'click':
+        this.clickEventHandlers.add(callback);
+        break;
+      case 'mouseEnter':
+        this.mouseEnterEventHandlers.add(callback);
+        break;
+      case 'mouseLeave':
+        this.mouseLeaveEventHandlers.add(callback);
+        break;
+      case 'elementEnter':
+        this.elementEnterEventHandlers.add(callback);
+        break;
+      case 'elementLeave':
+        this.elementLeaveEventHandlers.add(callback);
+        break;
+      default:
+        console.warn(`Malfurion do not support '${event}' type.`);
+    }
+  };
+
+  getSVG = () => {
     if (!this.svg) {
       // Create id cache
       const idCacheList = Object.keys(this.entity.ids)
@@ -240,19 +276,19 @@ class Malfurion {
 
       // Events
       svg.addEventListener('click', (e: any) => {
-        if (events.onClick) events.onClick(e, this);
+        this.clickEventHandlers.forEach(callback => callback(e, this));
       });
       svg.addEventListener('mouseenter', (e: any) => {
-        if (events.onMouseEnter) events.onMouseEnter!(e, this);
+        this.mouseEnterEventHandlers.forEach(callback => callback(e, this));
       });
       svg.addEventListener('mouseleave', (e: any) => {
-        if (events.onMouseLeave) events.onMouseLeave!(e, this);
+        this.mouseLeaveEventHandlers.forEach(callback => callback(e, this));
       });
       svg.addEventListener('mouseover', (e: any) => {
-        if (events.onElementEnter) events.onElementEnter!(e, this);
+        this.elementEnterEventHandlers.forEach(callback => callback(e, this));
       });
       svg.addEventListener('mouseout', (e: any) => {
-        if (events.onElementLeave) events.onElementLeave!(e, this);
+        this.elementLeaveEventHandlers.forEach(callback => callback(e, this));
       });
 
       this.svg = svg;
@@ -262,6 +298,10 @@ class Malfurion {
   };
 
   getPath = (element: any): number[] => {
+    if (!element) {
+      return [];
+    }
+
     const dataPath: string | null = element.getAttribute('data-path');
     if (!dataPath) {
       return [];

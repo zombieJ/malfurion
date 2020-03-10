@@ -26,7 +26,7 @@ function useElementSelection(
   overwriteProxyRef: React.RefObject<ProxyRef> = { current: null },
 ): [
   SVGBox | null,
-  (instance: Malfurion, target: SVGGraphicsElement) => void,
+  (instance: Malfurion, target: SVGGraphicsElement | null) => void,
   React.RefObject<ProxyRef>,
 ] {
   const [rectProps, setRectProps] = React.useState<SVGBox | null>(null);
@@ -45,7 +45,7 @@ function useElementSelection(
     }
   }, [current, currentPath]);
 
-  function updateSelection(instance: Malfurion, target: SVGGraphicsElement) {
+  function updateSelection(instance: Malfurion, target: SVGGraphicsElement | null) {
     if (proxyRef.current.current !== instance) {
       setCurrent(instance);
       setCurrentPath([0]);
@@ -81,22 +81,18 @@ export default function App() {
     const plant = new Malfurion(svgText);
     plant.debug = true;
 
-    svgRef.current!.appendChild(
-      plant.getSVG({
-        onClick: ({ target, currentTarget }, instance) => {
-          console.log('>>>', target, currentTarget);
+    plant.addEventListener('click', ({ target, currentTarget }, instance) => {
+      console.log('>>>', target, currentTarget);
+      updateSelection(instance, target);
+    });
+    plant.addEventListener('elementEnter', ({ target }, instance) => {
+      updateHoverSelection(instance, target);
+    });
+    plant.addEventListener('elementLeave', (_, instance) => {
+      updateHoverSelection(instance, null);
+    });
 
-          updateSelection(instance, target);
-        },
-        onElementEnter: ({ target }, instance) => {
-          updateHoverSelection(instance, target);
-        },
-        onElementLeave: () => {
-          console.log('leave');
-        },
-      }),
-    );
-    Malfurion.DEBUG = false;
+    svgRef.current!.appendChild(plant.getSVG());
   }, []);
 
   return (
