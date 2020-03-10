@@ -3,17 +3,19 @@ import React from 'react';
 import plantTXT from './svg/Plant';
 import Malfurion, { SVGBox } from '../src';
 
-const svgText = plantTXT;
-// const anotherText = `
-// <svg>
-//   <g transform="translate(150, 100)">
-//     <g transform="rotate(45 0 0)">
-//       <rect x="0" y="0" width="100" height="100" fill="green" />
-//       <circle cx="50" cy="50" r="10" fill="blue" />
-//     </g>
-//   </g>
-// </svg>
-// `;
+// const svgText = plantTXT;
+const svgText = `
+<svg>
+  <g transform="translate(150, 100)">
+    <g transform="rotate(45 0 0)">
+      <rect x="0" y="0" width="100" height="100" fill="green" />
+      <circle cx="50" cy="50" r="10" fill="blue" />
+    </g>
+  </g>
+
+  <circle cx="30" cy="20" r="10" fill="red" />
+</svg>
+`;
 
 interface ProxyRef {
   current: Malfurion | null;
@@ -46,7 +48,7 @@ function useElementSelection(
   function updateSelection(instance: Malfurion, target: SVGGraphicsElement) {
     if (proxyRef.current.current !== instance) {
       setCurrent(instance);
-      setCurrentPath([]);
+      setCurrentPath([0]);
     } else {
       const path = instance.getPath(target);
 

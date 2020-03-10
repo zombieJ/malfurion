@@ -69,15 +69,28 @@ function analysisNodes(
   return nodeEntities;
 }
 
-function analysisSVG(list: any): SVGEntity {
+function analysisSVG(list: any, rootRect: SVGBox): SVGEntity {
   const entity: SVGEntity = {
     ids: {},
     defs: [],
     nodes: [],
   };
   const elements: SVGGraphicsElement[] = Array.from(list);
+  let rootNodes = analysisNodes(elements, entity);
 
-  entity.nodes = analysisNodes(elements, entity);
+  if (rootNodes.length > 1) {
+    rootNodes = [
+      {
+        tagName: 'g',
+        rect: rootRect,
+        box: rootRect,
+        attributes: {},
+        children: rootNodes,
+      },
+    ];
+  }
+
+  entity.nodes = rootNodes;
 
   return entity;
 }
@@ -113,8 +126,8 @@ class Malfurion {
     document.body.appendChild(svg);
 
     // Calculate rect
-    this.entity = analysisSVG(svg.children);
     this.rect = getBox(svg);
+    this.entity = analysisSVG(svg.children, this.rect);
 
     // Clean up
     document.body.removeChild(svg);
