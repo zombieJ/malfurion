@@ -7,6 +7,7 @@ import {
   MalfurionEventHandler,
   MalfurionEventType,
 } from './interface';
+import Matrix from './utils/matrix';
 
 export { SVGBox };
 
@@ -248,12 +249,19 @@ class Malfurion {
 
     if (ele) {
       const deg = (angle / 180) * Math.PI;
-      // ele.setAttribute('transform', `rotate(${rotate})`);
+
+      const matrix = Matrix.fromTransform([
+        Math.cos(deg),
+        Math.sin(deg),
+        -Math.sin(deg),
+        Math.cos(deg),
+        0,
+        0,
+      ]);
+
       ele.setAttribute(
         'transform',
-        `matrix(${Math.cos(deg)}, ${Math.sin(deg)}, ${-Math.sin(
-          deg,
-        )}, ${Math.cos(deg)}, 0, 0)`,
+        `matrix(${matrix.toTransform().join(',')})`,
       );
     }
   };
