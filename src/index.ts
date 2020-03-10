@@ -1,4 +1,4 @@
-import { getNodeRecord, getBox } from './util';
+import { getBox, analysisSVG, PathCache } from './util';
 import {
   SVGEntity,
   SVGNodeEntity,
@@ -10,100 +10,18 @@ import {
 
 export { SVGBox };
 
-let uuid = 0;
-
 const MALFURION_INSTANCE = '__Malfurion_Instance__';
 
-function analysisNodes(
-  nodes: SVGGraphicsElement[],
-  entity: SVGEntity,
-  isDefs: boolean = false,
-): SVGNodeEntity[] {
-  const nodeEntities: SVGNodeEntity[] = [];
-
-  function postRecord(record: SVGNodeRecord) {
-    if (record.attributes.id) {
-      const newId = `MALFURION_${uuid}`;
-      entity.ids[record.attributes.id] = newId;
-      record.attributes.id = newId;
-      uuid += 1;
-    }
-  }
-
-  nodes.forEach(node => {
-    const { tagName, children } = node;
-
-    switch (tagName) {
-      case 'title':
-      case 'desc':
-        return;
-
-      case 'mask':
-        entity.defs.push(getNodeRecord(node, true, postRecord));
-        return;
-
-      case 'defs':
-        analysisNodes(
-          Array.from(children) as SVGGraphicsElement[],
-          entity,
-          true,
-        );
-        return;
-
-      default:
-        if (isDefs) {
-          entity.defs.push(getNodeRecord(node, true, postRecord));
-        } else {
-          nodeEntities.push({
-            ...getNodeRecord(node, false, postRecord),
-            rect: getBox(node),
-            box: getBox(node, true),
-            children: analysisNodes(
-              Array.from(children) as SVGGraphicsElement[],
-              entity,
-            ),
-          });
-        }
-    }
-  });
-
-  return nodeEntities;
-}
-
-function analysisSVG(list: any, rootRect: SVGBox): SVGEntity {
-  const entity: SVGEntity = {
-    ids: {},
-    defs: [],
-    nodes: [],
-  };
-  const elements: SVGGraphicsElement[] = Array.from(list);
-  let rootNodes = analysisNodes(elements, entity);
-
-  if (rootNodes.length > 1) {
-    rootNodes = [
-      {
-        tagName: 'g',
-        rect: rootRect,
-        box: rootRect,
-        attributes: {},
-        children: rootNodes,
-      },
-    ];
-  }
-
-  entity.nodes = rootNodes;
-
-  return entity;
-}
-
 class Malfurion {
+  public debug: boolean = false;
+
   private entity: SVGEntity;
 
   private rect: SVGBox;
 
   private svg: SVGSVGElement | null = null;
 
-  public debug: boolean = false;
+  private pathCache: PathCache = new PathCache();
 
   private clickEventHandlers = new Set<MalfurionEventHandler>();
 
@@ -216,6 +134,7 @@ class Malfurion {
           const elePath = path ? [...path, index] : path;
           if (elePath) {
             ele.setAttribute('data-path', elePath.join('-'));
+            this.pathCache.set(ele, elePath);
           }
 
           // Attributes
@@ -297,18 +216,7 @@ class Malfurion {
     return this.svg;
   };
 
-  getPath = (element: any): number[] => {
-    if (!element) {
-      return [];
-    }
-
-    const dataPath: string | null = element.getAttribute('data-path');
-    if (!dataPath) {
-      return [];
-    }
-
-    return dataPath.split('-').map(pos => Number(pos));
-  };
+  getPath = (element: any): number[] | null => this.pathCache.getPath(element);
 
   getBox = (path?: number[]): SVGBox | null => {
     if (!path || !path.length) {
@@ -331,7 +239,9 @@ class Malfurion {
     return null;
   };
 
-  // rotate = (path: number[], rotate: number) => {};
+  rotate = (path: number[], rotate: number) => {
+    console.log('>>>', path, rotate);
+  };
 }
 
 export default Malfurion;

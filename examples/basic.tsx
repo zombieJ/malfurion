@@ -1,6 +1,6 @@
 import '../assets/index.less';
 import React from 'react';
-import plantTXT from './svg/Plant';
+// import plantTXT from './svg/Plant';
 import Malfurion, { SVGBox } from '../src';
 
 // const svgText = plantTXT;
@@ -9,11 +9,11 @@ const svgText = `
   <g transform="translate(150, 100)">
     <g transform="rotate(45 0 0)">
       <rect x="0" y="0" width="100" height="100" fill="green" />
-      <circle cx="50" cy="50" r="10" fill="blue" />
+      <circle cx="50" cy="50" r="10" fill="yellow" />
     </g>
   </g>
 
-  <circle cx="30" cy="20" r="10" fill="red" />
+  <circle cx="50" cy="50" r="20" fill="red" />
 </svg>
 `;
 
@@ -24,11 +24,16 @@ interface ProxyRef {
 
 function useElementSelection(
   overwriteProxyRef: React.RefObject<ProxyRef> = { current: null },
-): [
-  SVGBox | null,
-  (instance: Malfurion, target: SVGGraphicsElement | null) => void,
-  React.RefObject<ProxyRef>,
-] {
+): {
+  instance: Malfurion | null;
+  path: number[];
+  rect: SVGBox | null;
+  updateSelection: (
+    instance: Malfurion,
+    target: SVGGraphicsElement | null,
+  ) => void;
+  proxyRef: React.RefObject<ProxyRef>;
+} {
   const [rectProps, setRectProps] = React.useState<SVGBox | null>(null);
   const [current, setCurrent] = React.useState<Malfurion | null>(null);
   const [currentPath, setCurrentPath] = React.useState<number[]>([]);
@@ -45,12 +50,15 @@ function useElementSelection(
     }
   }, [current, currentPath]);
 
-  function updateSelection(instance: Malfurion, target: SVGGraphicsElement | null) {
+  function updateSelection(
+    instance: Malfurion,
+    target: SVGGraphicsElement | null,
+  ) {
     if (proxyRef.current.current !== instance) {
       setCurrent(instance);
       setCurrentPath([0]);
     } else {
-      const path = instance.getPath(target);
+      const path = instance.getPath(target) || [];
 
       // Need to get common shared path
       const commonPath = [];
@@ -68,14 +76,20 @@ function useElementSelection(
     }
   }
 
-  return [rectProps, updateSelection, proxyRef];
+  return {
+    instance: current,
+    path: currentPath,
+    rect: rectProps,
+    updateSelection,
+    proxyRef,
+  };
 }
 
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
 
-  const [selectReact, updateSelection, selectionRef] = useElementSelection();
-  const [hoverReact, updateHoverSelection] = useElementSelection(selectionRef);
+  const selection = useElementSelection();
+  const hover = useElementSelection(selection.proxyRef);
 
   React.useEffect(() => {
     const plant = new Malfurion(svgText);
@@ -83,13 +97,13 @@ export default function App() {
 
     plant.addEventListener('click', ({ target, currentTarget }, instance) => {
       console.log('>>>', target, currentTarget);
-      updateSelection(instance, target);
+      selection.updateSelection(instance, target);
     });
     plant.addEventListener('elementEnter', ({ target }, instance) => {
-      updateHoverSelection(instance, target);
+      hover.updateSelection(instance, target);
     });
     plant.addEventListener('elementLeave', (_, instance) => {
-      updateHoverSelection(instance, null);
+      hover.updateSelection(instance, null);
     });
 
     svgRef.current!.appendChild(plant.getSVG());
@@ -100,7 +114,9 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          console.log('Rotate!!!');
+          if (selection.instance) {
+            selection.instance.rotate(selection.path, 45);
+          }
         }}
       >
         Rotate
@@ -123,13 +139,13 @@ export default function App() {
           strokeWidth={5}
           fill="transparent"
           style={{ pointerEvents: 'none' }}
-          {...selectReact}
+          {...selection.rect}
         />
         <rect
           stroke="blue"
           fill="transparent"
           style={{ pointerEvents: 'none' }}
-          {...hoverReact}
+          {...hover.rect}
         />
       </svg>
     </div>
