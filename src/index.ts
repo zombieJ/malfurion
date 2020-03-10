@@ -170,7 +170,6 @@ class Malfurion {
           if (this.debug && rect) {
             (ele as any).debugRect = rect;
             (ele as any).debugBox = box;
-            console.log('~~~!!!!', rect, box);
             const center = document.createElementNS(
               'http://www.w3.org/2000/svg',
               'circle',
@@ -222,9 +221,9 @@ class Malfurion {
   getElement = (path: number[]): SVGGraphicsElement | null =>
     this.pathCache.getElement(path) as SVGGraphicsElement;
 
-  getBox = (path?: number[]): SVGBox | null => {
+  private getNodeEntity = (path?: number[]) => {
     if (!path || !path.length) {
-      return this.rect;
+      return null;
     }
 
     let { nodes } = this.entity;
@@ -234,10 +233,23 @@ class Malfurion {
       const current = nodes[index];
 
       if (i === path.length - 1) {
-        return current.rect;
+        return current;
       }
 
       nodes = current.children;
+    }
+
+    return null;
+  };
+
+  getBox = (path?: number[], pure: boolean = false): SVGBox | null => {
+    if (!path || !path.length) {
+      return this.rect;
+    }
+
+    const entity = this.getNodeEntity(path);
+    if (entity) {
+      return pure ? entity.box : entity.rect;
     }
 
     return null;
@@ -248,8 +260,25 @@ class Malfurion {
     const ele = this.getElement(path);
 
     if (ele) {
+      const { attributes } = this.getNodeEntity(path)!;
       const deg = (angle / 180) * Math.PI;
+      const box = this.getBox(path, true);
+      console.log('Box >', box, attributes);
 
+      // Transform matrix
+      const transX = box!.x + box!.width / 2;
+      const transY = box!.y + box!.height / 2;
+      const transMatrix = Matrix.fromTransform([1, 0, 0, 1, transX, transY]);
+      const transBackMatrix = Matrix.fromTransform([
+        1,
+        0,
+        0,
+        1,
+        -transX,
+        -transY,
+      ]);
+
+      // Rotate matrix
       const matrix = Matrix.fromTransform([
         Math.cos(deg),
         Math.sin(deg),
@@ -259,9 +288,15 @@ class Malfurion {
         0,
       ]);
 
+      const mergeMatrix = transMatrix
+        .multiple(matrix)
+        .multiple(transBackMatrix);
+
       ele.setAttribute(
         'transform',
-        `matrix(${matrix.toTransform().join(',')})`,
+        `${attributes.transform || ''} matrix(${mergeMatrix
+          .toTransform()
+          .join(',')})`,
       );
     }
   };
