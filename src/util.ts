@@ -55,8 +55,13 @@ function transformPoint(
   };
 }
 
-export function getBox(ele: SVGGraphicsElement) {
+export function getBox(ele: SVGGraphicsElement, pure: boolean = false) {
   const { x, y, width, height } = ele.getBBox();
+
+  if (pure) {
+    return { x, y, width, height };
+  }
+
   const { a, b, c, d, e, f } = ele.getCTM()!;
   const matrix: Matrix = [a, b, c, d, e, f];
 

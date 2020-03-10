@@ -56,6 +56,7 @@ function analysisNodes(
           nodeEntities.push({
             ...getNodeRecord(node, false, postRecord),
             rect: getBox(node),
+            box: getBox(node, true),
             children: analysisNodes(
               Array.from(children) as SVGGraphicsElement[],
               entity,
@@ -86,7 +87,9 @@ class Malfurion {
 
   private rect: SVGBox;
 
-  public static DEBUG: boolean = false;
+  private svg: SVGSVGElement | null = null;
+
+  public debug: boolean = false;
 
   static getInstance = (svg: SVGSVGElement): Malfurion =>
     (svg as any)[MALFURION_INSTANCE];
@@ -104,9 +107,6 @@ class Malfurion {
   };
 
   constructor(source: string) {
-    if (Malfurion.DEBUG) {
-      console.time('parseSVG');
-    }
     const holder = document.createElement('div');
     holder.innerHTML = source;
     const svg = holder.querySelector('svg')!;
@@ -118,120 +118,143 @@ class Malfurion {
 
     // Clean up
     document.body.removeChild(svg);
-
-    if (Malfurion.DEBUG) {
-      console.timeEnd('parseSVG');
-      console.log('Entity:', this.entity);
-    }
   }
 
   getSVG = (events: SVGEvents = {}) => {
-    // Create id cache
-    const idCacheList = Object.keys(this.entity.ids)
-      .sort((id1, id2) => id2.length - id1.length)
-      .map(id => [id, this.entity.ids[id]]);
+    if (!this.svg) {
+      // Create id cache
+      const idCacheList = Object.keys(this.entity.ids)
+        .sort((id1, id2) => id2.length - id1.length)
+        .map(id => [id, this.entity.ids[id]]);
 
-    if (Malfurion.DEBUG) {
-      console.time('getSVG');
-    }
+      if (this.debug) {
+        console.time('getSVG');
+      }
 
-    // Render svg
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    (svg as any)[MALFURION_INSTANCE] = this;
-    svg.appendChild(defs);
+      // Render svg
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const defs = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'defs',
+      );
+      const debugHolder = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'g',
+      );
+      (svg as any)[MALFURION_INSTANCE] = this;
+      svg.appendChild(defs);
 
-    function fillNodes(holder: Element, nodes: SVGNodeRecord[]) {
-      nodes.forEach(({ tagName, attributes, children }) => {
-        const ele = document.createElementNS(
-          'http://www.w3.org/2000/svg',
-          tagName,
-        );
+      const fillNodes = (
+        holder: Element,
+        nodes: SVGNodeRecord[] | SVGNodeEntity[],
+        path: false | number[] = [],
+      ) => {
+        nodes.forEach((node, index) => {
+          const {
+            tagName,
+            attributes,
+            children,
+            rect,
+            box,
+          } = node as SVGNodeEntity;
 
-        // Attributes
-        Object.keys(attributes).forEach(key => {
-          let value = attributes[key];
+          const ele = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            tagName,
+          );
 
-          // Replace value with real id
-          if (value.includes('#')) {
-            idCacheList.forEach(([id, replaceId]) => {
-              value = value.replace(`#${id}`, `#${replaceId}`);
-            });
+          // Fill path data
+          const elePath = path ? [...path, index] : path;
+          if (elePath) {
+            ele.setAttribute('data-path', elePath.join('-'));
           }
 
-          if (key.includes('xlink:')) {
-            ele.setAttributeNS(
-              'http://www.w3.org/1999/xlink',
-              'xlink:href',
-              value,
+          // Attributes
+          Object.keys(attributes).forEach(key => {
+            let value = attributes[key];
+
+            // Replace value with real id
+            if (value.includes('#')) {
+              idCacheList.forEach(([id, replaceId]) => {
+                value = value.replace(`#${id}`, `#${replaceId}`);
+              });
+            }
+
+            if (key.includes('xlink:')) {
+              ele.setAttributeNS(
+                'http://www.w3.org/1999/xlink',
+                'xlink:href',
+                value,
+              );
+            } else {
+              ele.setAttribute(key, value);
+            }
+          });
+
+          // Children
+          fillNodes(ele, children, elePath);
+
+          // Append node
+          holder.appendChild(ele);
+
+          // ================ DEBUG ================
+          if (this.debug && rect) {
+            (ele as any).debugRect = rect;
+            (ele as any).debugBox = box;
+            console.log('~~~!!!!', rect, box);
+            const center = document.createElementNS(
+              'http://www.w3.org/2000/svg',
+              'circle',
             );
-          } else {
-            ele.setAttribute(key, value);
+            (center as any).debugNode = ele;
+            center.style.pointerEvents = 'none';
+            center.setAttribute('cx', `${rect.x + rect.width / 2}`);
+            center.setAttribute('cy', `${rect.y + rect.height / 2}`);
+            center.setAttribute('r', '5');
+            center.setAttribute('fill', 'blue');
+            debugHolder.appendChild(center);
           }
         });
+      };
 
-        // Children
-        fillNodes(ele, children);
+      fillNodes(defs, this.entity.defs, false);
+      fillNodes(svg, this.entity.nodes);
 
-        holder.appendChild(ele);
-      });
-    }
+      if (this.debug) {
+        svg.appendChild(debugHolder);
+        console.timeEnd('getSVG');
+      }
 
-    fillNodes(defs, this.entity.defs);
-    fillNodes(svg, this.entity.nodes);
-
-    if (Malfurion.DEBUG) {
-      console.timeEnd('getSVG');
-    }
-
-    // Events
-    if (events.onClick) {
+      // Events
       svg.addEventListener('click', (e: any) => {
-        events.onClick!(e, this);
+        if (events.onClick) events.onClick(e, this);
       });
-    }
-    if (events.onMouseEnter) {
       svg.addEventListener('mouseenter', (e: any) => {
-        events.onMouseEnter!(e, this);
+        if (events.onMouseEnter) events.onMouseEnter!(e, this);
       });
-    }
-    if (events.onMouseLeave) {
       svg.addEventListener('mouseleave', (e: any) => {
-        events.onMouseLeave!(e, this);
+        if (events.onMouseLeave) events.onMouseLeave!(e, this);
       });
-    }
-    if (events.onElementEnter) {
       svg.addEventListener('mouseover', (e: any) => {
-        events.onElementEnter!(e, this);
+        if (events.onElementEnter) events.onElementEnter!(e, this);
       });
-    }
-    if (events.onElementLeave) {
       svg.addEventListener('mouseout', (e: any) => {
-        events.onElementLeave!(e, this);
+        if (events.onElementLeave) events.onElementLeave!(e, this);
       });
+
+      this.svg = svg;
     }
 
-    return svg;
+    return this.svg;
   };
 
   getPath = (element: any): number[] => {
-    const path: number[] = [];
-    let parent: any = element.parentNode;
-    let current = element;
-
-    while (parent) {
-      const index = Array.from(parent.children).indexOf(current);
-      path.unshift(index);
-
-      current = parent;
-      parent = parent.parentNode;
-
-      if (current[MALFURION_INSTANCE]) {
-        break;
-      }
+    const dataPath: string | null = element.getAttribute('data-path');
+    if (!dataPath) {
+      return [];
     }
 
-    return path;
+    return dataPath.split('-').map(pos => Number(pos));
   };
 
   getBox = (path?: number[]): SVGBox | null => {
@@ -254,6 +277,8 @@ class Malfurion {
 
     return null;
   };
+
+  // rotate = (path: number[], rotate: number) => {};
 }
 
 export default Malfurion;

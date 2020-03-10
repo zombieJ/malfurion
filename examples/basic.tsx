@@ -76,8 +76,9 @@ export default function App() {
   const [hoverReact, updateHoverSelection] = useElementSelection(selectionRef);
 
   React.useEffect(() => {
-    Malfurion.DEBUG = true;
     const plant = new Malfurion(svgText);
+    plant.debug = true;
+
     svgRef.current!.appendChild(
       plant.getSVG({
         onClick: ({ target, currentTarget }, instance) => {
@@ -98,15 +99,30 @@ export default function App() {
 
   return (
     <div>
+      <button
+        type="button"
+        onClick={() => {
+          console.log('Rotate!!!');
+        }}
+      >
+        Rotate
+      </button>
+
       <svg
         width={2000}
         height={2000}
         viewBox="0 0 2000 2000"
-        style={{ width: 500, height: 500 }}
+        style={{
+          width: 500,
+          height: 500,
+          display: 'block',
+          background: 'rgba(255, 0, 0, 0.1)',
+        }}
       >
         <g ref={svgRef} />
         <rect
           stroke="red"
+          strokeWidth={5}
           fill="transparent"
           style={{ pointerEvents: 'none' }}
           {...selectReact}

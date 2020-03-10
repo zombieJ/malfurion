@@ -16,6 +16,7 @@ export interface SVGNodeRecord {
 export interface SVGNodeEntity extends SVGNodeRecord {
   children: SVGNodeEntity[];
   rect: SVGBox;
+  box: SVGBox;
 }
 
 export interface SVGEntity {
