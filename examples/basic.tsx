@@ -115,12 +115,12 @@ export default function App() {
     plant.addEventListener('click', ({ target }, instance) => {
       selection.updateSelection(instance, target);
     });
-    // plant.addEventListener('elementEnter', ({ target }, instance) => {
-    //   hover.updateSelection(instance, target);
-    // });
-    // plant.addEventListener('elementLeave', (_, instance) => {
-    //   hover.updateSelection(instance, null);
-    // });
+    plant.addEventListener('elementEnter', ({ target }, instance) => {
+      hover.updateSelection(instance, target);
+    });
+    plant.addEventListener('elementLeave', (_, instance) => {
+      hover.updateSelection(instance, null);
+    });
 
     svgRef.current!.appendChild(plant.getSVG());
   }, []);
@@ -181,9 +181,17 @@ export default function App() {
         }}
       >
         <g ref={svgRef} dangerouslySetInnerHTML={{ __html: '' }} />
+
         <rect
-          stroke="red"
-          strokeWidth={5}
+          stroke="rgba(0, 0, 0, 0.3)"
+          fill="transparent"
+          style={{ pointerEvents: 'none' }}
+          {...hover.boundingBox}
+        />
+
+        <rect
+          stroke="#000"
+          strokeWidth={1}
           fill="transparent"
           style={{ pointerEvents: 'none' }}
           vectorEffect="non-scaling-stroke"
@@ -211,13 +219,6 @@ export default function App() {
             />
           </g>
         )}
-
-        <rect
-          stroke="blue"
-          fill="transparent"
-          style={{ pointerEvents: 'none' }}
-          {...hover.boundingBox}
-        />
       </svg>
     </div>
   );
