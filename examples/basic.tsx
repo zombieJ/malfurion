@@ -4,25 +4,25 @@ import React from 'react';
 import Malfurion, { SVGBox } from '../src';
 
 // const svgText = plantTXT;
-const svgText = `
-<svg>
-  <g transform="translate(150, 100)">
-    <g transform="rotate(45 0 0)">
-      <rect x="0" y="0" width="100" height="100" fill="green" />
-      <circle cx="50" cy="50" r="10" fill="yellow" />
-    </g>
-  </g>
-
-  <circle cx="50" cy="50" r="20" fill="red" />
-</svg>
-`;
 // const svgText = `
 // <svg>
 //   <g transform="translate(150, 100)">
-//     <rect x="0" y="0" width="100" height="100" fill="green" />
+//     <g transform="rotate(45 0 0)">
+//       <rect x="0" y="0" width="100" height="100" fill="green" />
+//       <circle cx="50" cy="50" r="10" fill="yellow" />
+//     </g>
 //   </g>
+
+//   <circle cx="50" cy="50" r="20" fill="red" />
 // </svg>
 // `;
+const svgText = `
+<svg>
+  <g transform="translate(150, 100) scale(2)">
+    <rect x="0" y="0" width="100" height="100" fill="green" />
+  </g>
+</svg>
+`;
 
 interface ProxyRef {
   current: Malfurion | null;

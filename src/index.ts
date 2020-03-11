@@ -256,12 +256,24 @@ class Malfurion {
   };
 
   rotate = (path: number[], angle: number) => {
-    console.log('Rotate:', path, angle);
-    const ele = this.getElement(path);
+    const entity = this.getNodeEntity(path);
 
-    if (ele) {
-      const { attributes } = this.getNodeEntity(path)!;
-      const deg = (angle / 180) * Math.PI;
+    if (entity) {
+      entity.rotate = angle;
+      this.refresh(path);
+    }
+
+    return (entity && entity.rotate) || 0;
+  };
+
+  refresh = (path: number[]) => {
+    const entity = this.getNodeEntity(path);
+
+    if (entity) {
+      const { rotate = 0 } = entity;
+      const ele = this.getElement(path);
+      const { attributes } = entity;
+      const deg = (rotate / 180) * Math.PI;
       const box = this.getBox(path, true);
       console.log('Box >', box, attributes);
 
@@ -292,7 +304,7 @@ class Malfurion {
         .multiple(matrix)
         .multiple(transBackMatrix);
 
-      ele.setAttribute(
+      ele!.setAttribute(
         'transform',
         `${attributes.transform || ''} matrix(${mergeMatrix
           .toTransform()

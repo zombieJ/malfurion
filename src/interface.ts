@@ -17,6 +17,12 @@ export interface SVGNodeEntity extends SVGNodeRecord {
   children: SVGNodeEntity[];
   rect: SVGBox;
   box: SVGBox;
+  rotate?: number;
+  originX?: number;
+  originY?: number;
+  scaleX?: number;
+  scaleY?: number;
+  opacity?: number;
 }
 
 export interface SVGEntity {
