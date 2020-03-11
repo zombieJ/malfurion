@@ -1,4 +1,4 @@
-import { getBox, analysisSVG } from './utils/svgUtil';
+import { getBox, analysisSVG, getMergedTransform } from './utils/svgUtil';
 import {
   SVGEntity,
   SVGNodeEntity,
@@ -13,7 +13,7 @@ import { PathCache } from './utils/cacheUtil';
 
 export { BoundingBox };
 
-const MALFURION_INSTANCE = '__Malfurion_Instance__';
+export const MALFURION_INSTANCE = '__Malfurion_Instance__';
 
 class Malfurion {
   public debug: boolean = false;
@@ -296,17 +296,7 @@ class Malfurion {
     const entity = this.getNodeEntity(path);
 
     if (entity) {
-      let mergedTransform = '';
-      let element: HTMLElement | null = (this.getElement(
-        path,
-      ) as unknown) as HTMLElement;
-      while (element && !(element as any)[MALFURION_INSTANCE]) {
-        console.log('>>>', element);
-        const transform = element.getAttribute('transform') || '';
-        mergedTransform = `${transform} ${mergedTransform}`;
-
-        element = element!.parentElement;
-      }
+      const mergedTransform = getMergedTransform(this.getElement(path)!);
 
       console.log('-=>', mergedTransform);
 

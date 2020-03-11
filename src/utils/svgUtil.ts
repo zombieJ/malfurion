@@ -1,5 +1,6 @@
 import { SVGNodeRecord, SVGEntity, SVGNodeEntity, SVGBox } from '../interface';
 import Matrix from './matrix';
+import { MALFURION_INSTANCE } from '..';
 
 export function getAttributes({
   attributes,
@@ -172,4 +173,17 @@ export function analysisSVG(list: any, rootRect: SVGBox): SVGEntity {
   entity.nodes = rootNodes;
 
   return entity;
+}
+
+export function getMergedTransform(element: SVGGraphicsElement): string {
+  let mergedTransform = '';
+  let current: HTMLElement | null = (element as unknown) as HTMLElement;
+  while (current && !(current as any)[MALFURION_INSTANCE]) {
+    const transform = current.getAttribute('transform') || '';
+    mergedTransform = `${transform} ${mergedTransform}`.trim();
+
+    current = current!.parentElement;
+  }
+
+  return mergedTransform;
 }
