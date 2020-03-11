@@ -298,14 +298,16 @@ class Malfurion {
       let current: SVGNodeEntity | null = entity;
       const box: BoundingBox = {
         ...this.getOriginBox(path),
-        transform: this.getMatrix(path).toString(),
+        transform: this.getMatrix(path, this.getOriginBox(path)).toString(),
       };
 
-      console.log('=>', box);
+      // console.log('=>', box);
 
       // while (current) {
       //   current = current.parent;
       // }
+
+      // const box = this.getOriginBox(path);
 
       return box;
     }
@@ -354,7 +356,7 @@ class Malfurion {
   scaleY = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'scaleY', 1, value);
 
-  getMatrix = (path: number[]) => {
+  getMatrix = (path: number[], box?: SVGBox | null) => {
     const entity = this.getNodeEntity(path);
     let mergeMatrix = Matrix.fromTranslate(0, 0);
 
@@ -367,13 +369,13 @@ class Malfurion {
         originY = 0.5,
       } = entity;
 
-      const box = this.getOriginBox(path, true);
+      const mergedBox = box || this.getOriginBox(path, true);
 
       // Rotate matrix
       if (rotate !== 0) {
         const deg = (rotate / 180) * Math.PI;
-        const transX = box!.x + box!.width * originX;
-        const transY = box!.y + box!.height * originY;
+        const transX = mergedBox!.x + mergedBox!.width * originX;
+        const transY = mergedBox!.y + mergedBox!.height * originY;
         const transToMatrix = Matrix.fromTranslate(transX, transY);
         const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
         const rotateMatrix = Matrix.fromTransform(
@@ -393,8 +395,8 @@ class Malfurion {
 
       // Scale matrix
       if (scaleX !== 1 || scaleY !== 1) {
-        const transX = box!.x + box!.width * originX;
-        const transY = box!.y + box!.height * originY;
+        const transX = mergedBox!.x + mergedBox!.width * originX;
+        const transY = mergedBox!.y + mergedBox!.height * originY;
         const transToMatrix = Matrix.fromTranslate(transX, transY);
         const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
         const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);

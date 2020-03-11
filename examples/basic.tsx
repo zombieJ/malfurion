@@ -182,6 +182,7 @@ export default function App() {
           strokeWidth={5}
           fill="transparent"
           style={{ pointerEvents: 'none' }}
+          vectorEffect="non-scaling-stroke"
           {...selection.rect}
         />
         <rect
