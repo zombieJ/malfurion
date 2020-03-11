@@ -110,39 +110,27 @@ class Malfurion {
       'g',
     );
 
-    const fillDebugNodes = (
-      nodes: SVGNodeRecord[] | SVGNodeEntity[],
-      path: number[] = [],
-    ) => {
-      nodes.forEach((node, index) => {
-        const elePath = [...path, index];
+    this.pathCache.getPathList().forEach(path => {
+      const mergedTransform = getMergedTransform(this.getElement(path)!);
+      const box = this.getOriginBox(path, true);
+      const entity = this.getNodeEntity(path);
 
-        const {
-          children,
-          rect,
-          originX = 0.5,
-          originY = 0.5,
-        } = node as SVGNodeEntity;
+      if (box && entity) {
+        const { originX = 0.5, originY = 0.5 } = entity;
+        const center = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'circle',
+        );
+        center.style.pointerEvents = 'none';
+        center.setAttribute('cx', `${box.x + box.width * originX}`);
+        center.setAttribute('cy', `${box.y + box.height * originY}`);
+        center.setAttribute('r', '5');
+        center.setAttribute('fill', 'blue');
+        center.setAttribute('transform', mergedTransform);
 
-        if (rect) {
-          const center = document.createElementNS(
-            'http://www.w3.org/2000/svg',
-            'circle',
-          );
-          center.style.pointerEvents = 'none';
-          center.setAttribute('cx', `${rect.x + rect.width * originX}`);
-          center.setAttribute('cy', `${rect.y + rect.height * originY}`);
-          center.setAttribute('r', '5');
-          center.setAttribute('fill', 'blue');
-          debugHolder.appendChild(center);
-        }
-
-        // Children
-        fillDebugNodes(children, elePath);
-      });
-    };
-
-    fillDebugNodes(this.entity.nodes);
+        debugHolder.appendChild(center);
+      }
+    });
     this.debugHolder = debugHolder;
     this.svg.appendChild(this.debugHolder);
   };
@@ -298,8 +286,6 @@ class Malfurion {
     if (entity) {
       const mergedTransform = getMergedTransform(this.getElement(path)!);
 
-      console.log('-=>', mergedTransform);
-
       const box = {
         ...this.getOriginBox(path, true),
         transform: mergedTransform,
@@ -330,18 +316,16 @@ class Malfurion {
       this.refresh(path);
     }
 
+    this.generateDebugHolder();
+
     return (entity && (entity[prop] as number)) || initialValue;
   };
 
-  originX = (path: number[], value?: number | ((origin: number) => number)) => {
+  originX = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'originX', 0.5, value);
-    this.generateDebugHolder();
-  };
 
-  originY = (path: number[], value?: number | ((origin: number) => number)) => {
+  originY = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'originY', 0.5, value);
-    this.generateDebugHolder();
-  };
 
   rotate = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'rotate', 0, value, val => val % 360);
