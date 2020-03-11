@@ -1,4 +1,4 @@
-import { getBox, analysisSVG, PathCache } from './util';
+import { getBox, analysisSVG } from './utils/svgUtil';
 import {
   SVGEntity,
   SVGNodeEntity,
@@ -9,6 +9,7 @@ import {
   BoundingBox,
 } from './interface';
 import Matrix from './utils/matrix';
+import { PathCache } from './utils/cacheUtil';
 
 export { BoundingBox };
 
