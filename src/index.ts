@@ -272,7 +272,11 @@ class Malfurion {
     return null;
   };
 
-  getBox = (path?: number[], pure: boolean = false): SVGBox | null => {
+  /**
+   * Return svg origin box related to the container.
+   * When `pure` to `true`, return origin box related to context.
+   */
+  getOriginBox = (path?: number[], pure: boolean = false): SVGBox | null => {
     if (!path || !path.length) {
       return this.rect;
     }
@@ -340,7 +344,7 @@ class Malfurion {
       const ele = this.getElement(path);
       const { attributes } = entity;
 
-      const box = this.getBox(path, true);
+      const box = this.getOriginBox(path, true);
 
       let mergeMatrix = Matrix.fromTranslate(0, 0);
 

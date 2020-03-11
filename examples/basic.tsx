@@ -53,7 +53,7 @@ function useElementSelection(
 
   React.useEffect(() => {
     if (current) {
-      setRectProps(current.getBox(currentPath)!);
+      setRectProps(current.getOriginBox(currentPath)!);
     }
   }, [current, currentPath]);
 
@@ -102,8 +102,7 @@ export default function App() {
     const plant = new Malfurion(svgText);
     plant.debug = true;
 
-    plant.addEventListener('click', ({ target, currentTarget }, instance) => {
-      console.log('>>>', target, currentTarget);
+    plant.addEventListener('click', ({ target }, instance) => {
       selection.updateSelection(instance, target);
     });
     plant.addEventListener('elementEnter', ({ target }, instance) => {
