@@ -183,8 +183,8 @@ export default function App() {
         <g ref={svgRef} dangerouslySetInnerHTML={{ __html: '' }} />
 
         <rect
-          stroke="rgba(0, 0, 0, 0.3)"
-          fill="transparent"
+          stroke="rgba(100, 100, 100, 0.5)"
+          fill="rgba(255, 255, 255, 0.1)"
           style={{ pointerEvents: 'none' }}
           {...hover.boundingBox}
         />
@@ -198,7 +198,10 @@ export default function App() {
           {...selection.boundingBox}
         />
         {selection.boundingBoxOrigin && (
-          <g transform={selection.boundingBoxOrigin.transform}>
+          <g
+            transform={selection.boundingBoxOrigin.transform}
+            style={{ pointerEvents: 'none' }}
+          >
             <line
               x1={selection.boundingBoxOrigin.x}
               x2={selection.boundingBoxOrigin.x}
