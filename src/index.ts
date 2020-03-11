@@ -6,10 +6,11 @@ import {
   SVGNodeRecord,
   MalfurionEventHandler,
   MalfurionEventType,
+  BoundingBox,
 } from './interface';
 import Matrix from './utils/matrix';
 
-export { SVGBox };
+export { BoundingBox };
 
 const MALFURION_INSTANCE = '__Malfurion_Instance__';
 
@@ -289,6 +290,29 @@ class Malfurion {
     return null;
   };
 
+  /** Return  */
+  getBox = (path: number[]): BoundingBox | null => {
+    const entity = this.getNodeEntity(path);
+
+    if (entity) {
+      let current: SVGNodeEntity | null = entity;
+      const box: BoundingBox = {
+        ...this.getOriginBox(path),
+        transform: this.getMatrix(path).toString(),
+      };
+
+      console.log('=>', box);
+
+      // while (current) {
+      //   current = current.parent;
+      // }
+
+      return box;
+    }
+
+    return null;
+  };
+
   private internalTransform = (
     path: number[],
     prop: keyof SVGNodeEntity,
@@ -330,8 +354,9 @@ class Malfurion {
   scaleY = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'scaleY', 1, value);
 
-  refresh = (path: number[]) => {
+  getMatrix = (path: number[]) => {
     const entity = this.getNodeEntity(path);
+    let mergeMatrix = Matrix.fromTranslate(0, 0);
 
     if (entity) {
       const {
@@ -341,12 +366,8 @@ class Malfurion {
         originX = 0.5,
         originY = 0.5,
       } = entity;
-      const ele = this.getElement(path);
-      const { attributes } = entity;
 
       const box = this.getOriginBox(path, true);
-
-      let mergeMatrix = Matrix.fromTranslate(0, 0);
 
       // Rotate matrix
       if (rotate !== 0) {
@@ -383,12 +404,22 @@ class Malfurion {
           .multiple(scaleMatrix)
           .multiple(transBackMatrix);
       }
+    }
+
+    return mergeMatrix;
+  };
+
+  refresh = (path: number[]) => {
+    const entity = this.getNodeEntity(path);
+
+    if (entity) {
+      const ele = this.getElement(path);
+      const { attributes } = entity;
+      const matrix = this.getMatrix(path);
 
       ele!.setAttribute(
         'transform',
-        `${attributes.transform || ''} matrix(${mergeMatrix
-          .toTransform()
-          .join(',')})`,
+        `${attributes.transform || ''} ${matrix.toString()}`,
       );
     }
   };

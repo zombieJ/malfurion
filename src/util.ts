@@ -85,6 +85,7 @@ export function getBox(ele: SVGGraphicsElement, pure: boolean = false) {
 let uuid = 0;
 
 export function analysisNodes(
+  parent: SVGNodeEntity | null,
   nodes: SVGGraphicsElement[],
   entity: SVGEntity,
   isDefs: boolean = false,
@@ -114,6 +115,7 @@ export function analysisNodes(
 
       case 'defs':
         analysisNodes(
+          null,
           Array.from(children) as SVGGraphicsElement[],
           entity,
           true,
@@ -124,15 +126,20 @@ export function analysisNodes(
         if (isDefs) {
           entity.defs.push(getNodeRecord(node, true, postRecord));
         } else {
-          nodeEntities.push({
+          const nodeEntity: SVGNodeEntity = {
             ...getNodeRecord(node, false, postRecord),
+            parent,
             rect: getBox(node),
             box: getBox(node, true),
-            children: analysisNodes(
-              Array.from(children) as SVGGraphicsElement[],
-              entity,
-            ),
-          });
+            children: [],
+          };
+
+          nodeEntity.children = analysisNodes(
+            nodeEntity,
+            Array.from(children) as SVGGraphicsElement[],
+            entity,
+          );
+          nodeEntities.push(nodeEntity);
         }
     }
   });
@@ -147,11 +154,12 @@ export function analysisSVG(list: any, rootRect: SVGBox): SVGEntity {
     nodes: [],
   };
   const elements: SVGGraphicsElement[] = Array.from(list);
-  let rootNodes = analysisNodes(elements, entity);
+  let rootNodes = analysisNodes(null, elements, entity);
 
   if (rootNodes.length > 1) {
     rootNodes = [
       {
+        parent: null,
         tagName: 'g',
         rect: rootRect,
         box: rootRect,

@@ -7,6 +7,10 @@ export interface SVGBox {
   height: number;
 }
 
+export interface BoundingBox extends Partial<SVGBox> {
+  transform?: string;
+}
+
 export interface SVGNodeRecord {
   tagName: string;
   attributes: Record<string, string>;
@@ -14,6 +18,7 @@ export interface SVGNodeRecord {
 }
 
 export interface SVGNodeEntity extends SVGNodeRecord {
+  parent: SVGNodeEntity | null;
   children: SVGNodeEntity[];
   rect: SVGBox;
   box: SVGBox;

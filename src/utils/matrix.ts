@@ -98,4 +98,9 @@ export default class Matrix {
       this.get(2, 1),
     ];
   };
+
+  toString = () => {
+    const transform = this.toTransform();
+    return `matrix(${transform.join(',')})`;
+  };
 }

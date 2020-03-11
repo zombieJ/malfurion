@@ -1,7 +1,7 @@
 import '../assets/index.less';
 import React from 'react';
 // import plantTXT from './svg/Plant';
-import Malfurion, { SVGBox } from '../src';
+import Malfurion, { BoundingBox } from '../src';
 
 // const svgText = plantTXT;
 // const svgText = `
@@ -18,11 +18,16 @@ import Malfurion, { SVGBox } from '../src';
 // `;
 const svgText = `
 <svg>
-  <g transform="translate(150, 100) scale(2)">
-    <rect x="0" y="0" width="100" height="100" fill="green" />
+  <g transform="translate(150, 100)">
+    <rect x="0" y="0" width="50" height="80" fill="green" />
   </g>
 </svg>
 `;
+// const svgText = `
+// <svg>
+//   <rect transform="translate(150, 100)" x="0" y="0" width="50" height="80" fill="green" />
+// </svg>
+// `;
 
 interface ProxyRef {
   current: Malfurion | null;
@@ -31,17 +36,8 @@ interface ProxyRef {
 
 function useElementSelection(
   overwriteProxyRef: React.RefObject<ProxyRef> = { current: null },
-): {
-  instance: Malfurion | null;
-  path: number[];
-  rect: SVGBox | null;
-  updateSelection: (
-    instance: Malfurion,
-    target: SVGGraphicsElement | null,
-  ) => void;
-  proxyRef: React.RefObject<ProxyRef>;
-} {
-  const [rectProps, setRectProps] = React.useState<SVGBox | null>(null);
+) {
+  const [rectProps, setRectProps] = React.useState<BoundingBox | null>(null);
   const [current, setCurrent] = React.useState<Malfurion | null>(null);
   const [currentPath, setCurrentPath] = React.useState<number[]>([]);
   const proxyRef = React.useRef({ current, currentPath });
@@ -53,7 +49,7 @@ function useElementSelection(
 
   React.useEffect(() => {
     if (current) {
-      setRectProps(current.getOriginBox(currentPath)!);
+      setRectProps(current.getBox(currentPath)!);
     }
   }, [current, currentPath]);
 
@@ -83,12 +79,22 @@ function useElementSelection(
     }
   }
 
+  function transformCurrentPath(
+    callback: (instance: Malfurion, path: number[]) => void,
+  ) {
+    if (current && currentPath) {
+      callback(current, currentPath);
+      setRectProps(current.getBox(currentPath)!);
+    }
+  }
+
   return {
     instance: current,
     path: currentPath,
     rect: rectProps,
     updateSelection,
     proxyRef,
+    transformCurrentPath,
   };
 }
 
@@ -105,12 +111,12 @@ export default function App() {
     plant.addEventListener('click', ({ target }, instance) => {
       selection.updateSelection(instance, target);
     });
-    plant.addEventListener('elementEnter', ({ target }, instance) => {
-      hover.updateSelection(instance, target);
-    });
-    plant.addEventListener('elementLeave', (_, instance) => {
-      hover.updateSelection(instance, null);
-    });
+    // plant.addEventListener('elementEnter', ({ target }, instance) => {
+    //   hover.updateSelection(instance, target);
+    // });
+    // plant.addEventListener('elementLeave', (_, instance) => {
+    //   hover.updateSelection(instance, null);
+    // });
 
     svgRef.current!.appendChild(plant.getSVG());
   }, []);
@@ -120,10 +126,10 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          if (selection.instance) {
-            selection.instance.originX(selection.path, Math.random());
-            selection.instance.originY(selection.path, Math.random());
-          }
+          selection.transformCurrentPath((instance, path) => {
+            instance.originX(path, Math.random());
+            instance.originY(path, Math.random());
+          });
         }}
       >
         Random Origin
@@ -131,9 +137,9 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          if (selection.instance) {
-            selection.instance.rotate(selection.path, origin => origin - 30);
-          }
+          selection.transformCurrentPath((instance, path) => {
+            instance.rotate(path, origin => origin + 30);
+          });
         }}
       >
         Rotate
@@ -141,9 +147,9 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          if (selection.instance) {
-            selection.instance.scaleX(selection.path, origin => origin + 0.1);
-          }
+          selection.transformCurrentPath((instance, path) => {
+            instance.scaleX(path, origin => origin + 0.1);
+          });
         }}
       >
         LargerX
@@ -151,26 +157,26 @@ export default function App() {
       <button
         type="button"
         onClick={() => {
-          if (selection.instance) {
-            selection.instance.scaleY(selection.path, origin => origin + 0.1);
-          }
+          selection.transformCurrentPath((instance, path) => {
+            instance.scaleY(path, origin => origin + 0.1);
+          });
         }}
       >
         LargerY
       </button>
 
       <svg
-        width={2000}
-        height={2000}
-        viewBox="0 0 2000 2000"
+        width={500}
+        height={500}
+        viewBox="0 0 500 500"
         style={{
-          width: 800,
+          width: 500,
           height: 500,
           display: 'block',
           background: 'rgba(255, 0, 0, 0.1)',
         }}
       >
-        <g ref={svgRef} />
+        <g ref={svgRef} dangerouslySetInnerHTML={{ __html: '' }} />
         <rect
           stroke="red"
           strokeWidth={5}
