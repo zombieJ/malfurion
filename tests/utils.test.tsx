@@ -24,7 +24,7 @@ describe('Utils', () => {
     });
 
     it('fromTransform', () => {
-      const m = Matrix.fromTransform([1, 2, 3, 4, 5, 6]);
+      const m = Matrix.fromTransform(1, 2, 3, 4, 5, 6);
       expect(m.getMatrix()).toEqual([
         [1, 3, 5],
         [2, 4, 6],

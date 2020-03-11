@@ -88,6 +88,10 @@ class Malfurion {
     }
   };
 
+  private getDebugNodes = () => {
+    
+  };
+
   getSVG = () => {
     if (!this.svg) {
       // Create id cache
@@ -255,54 +259,90 @@ class Malfurion {
     return null;
   };
 
-  rotate = (path: number[], angle: number) => {
+  private internalTransform = (
+    path: number[],
+    prop: keyof SVGNodeEntity,
+    initialValue: number,
+    value?: number | ((origin: number) => number),
+    postUpdate?: (val: number) => number,
+  ): number => {
     const entity = this.getNodeEntity(path);
 
-    if (entity) {
-      entity.rotate = angle;
+    if (entity && value !== undefined) {
+      const target =
+        typeof value === 'function'
+          ? value((entity[prop] as number) || initialValue)
+          : value;
+
+      (entity[prop] as number) = postUpdate ? postUpdate(target) : target;
       this.refresh(path);
     }
 
-    return (entity && entity.rotate) || 0;
+    return (entity && (entity[prop] as number)) || initialValue;
   };
+
+  originX = (path: number[], value?: number | ((origin: number) => number)) =>
+    this.internalTransform(path, 'originX', 0.5, value);
+
+  originY = (path: number[], value?: number | ((origin: number) => number)) =>
+    this.internalTransform(path, 'originY', 0.5, value);
+
+  rotate = (path: number[], value?: number | ((origin: number) => number)) =>
+    this.internalTransform(path, 'rotate', 0, value, val => val % 360);
+
+  scaleX = (path: number[], value?: number | ((origin: number) => number)) =>
+    this.internalTransform(path, 'scaleX', 1, value);
+
+  scaleY = (path: number[], value?: number | ((origin: number) => number)) =>
+    this.internalTransform(path, 'scaleY', 1, value);
 
   refresh = (path: number[]) => {
     const entity = this.getNodeEntity(path);
 
     if (entity) {
-      const { rotate = 0 } = entity;
+      const { rotate = 0, scaleX = 1, scaleY = 1 } = entity;
       const ele = this.getElement(path);
       const { attributes } = entity;
-      const deg = (rotate / 180) * Math.PI;
-      const box = this.getBox(path, true);
-      console.log('Box >', box, attributes);
 
-      // Transform matrix
-      const transX = box!.x + box!.width / 2;
-      const transY = box!.y + box!.height / 2;
-      const transMatrix = Matrix.fromTransform([1, 0, 0, 1, transX, transY]);
-      const transBackMatrix = Matrix.fromTransform([
-        1,
-        0,
-        0,
-        1,
-        -transX,
-        -transY,
-      ]);
+      const box = this.getBox(path, true);
+
+      let mergeMatrix = Matrix.fromTranslate(0, 0);
 
       // Rotate matrix
-      const matrix = Matrix.fromTransform([
-        Math.cos(deg),
-        Math.sin(deg),
-        -Math.sin(deg),
-        Math.cos(deg),
-        0,
-        0,
-      ]);
+      if (rotate !== 0) {
+        const deg = (rotate / 180) * Math.PI;
+        const transX = box!.x + box!.width / 2;
+        const transY = box!.y + box!.height / 2;
+        const transToMatrix = Matrix.fromTranslate(transX, transY);
+        const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
+        const rotateMatrix = Matrix.fromTransform(
+          Math.cos(deg),
+          Math.sin(deg),
+          -Math.sin(deg),
+          Math.cos(deg),
+          0,
+          0,
+        );
 
-      const mergeMatrix = transMatrix
-        .multiple(matrix)
-        .multiple(transBackMatrix);
+        mergeMatrix = mergeMatrix
+          .multiple(transToMatrix)
+          .multiple(rotateMatrix)
+          .multiple(transBackMatrix);
+      }
+
+      // Scale matrix
+      if (scaleX !== 1 || scaleY !== 1) {
+        const transX = box!.x + box!.width / 2;
+        const transY = box!.y + box!.height / 2;
+        const transToMatrix = Matrix.fromTranslate(transX, transY);
+        const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
+        const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+        mergeMatrix = mergeMatrix
+          .multiple(transToMatrix)
+          .multiple(scaleMatrix)
+          .multiple(transBackMatrix);
+      }
 
       ele!.setAttribute(
         'transform',

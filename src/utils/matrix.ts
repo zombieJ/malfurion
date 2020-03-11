@@ -1,7 +1,14 @@
 export default class Matrix {
   protected matrix: number[][];
 
-  public static fromTransform([a, b, c, d, e, f]: number[]) {
+  public static fromTransform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+  ) {
     const instance = new Matrix(3, 3);
 
     instance.set(0, 0, a);
@@ -13,6 +20,10 @@ export default class Matrix {
     instance.set(2, 2, 1);
 
     return instance;
+  }
+
+  public static fromTranslate(x: number, y: number) {
+    return Matrix.fromTransform(1, 0, 0, 1, x, y);
   }
 
   constructor(x: number, y: number, values?: number[]) {

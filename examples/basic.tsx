@@ -122,11 +122,42 @@ export default function App() {
         type="button"
         onClick={() => {
           if (selection.instance) {
-            selection.instance.rotate(selection.path, -30);
+            selection.instance.originX(selection.path, Math.random());
+            selection.instance.originY(selection.path, Math.random());
+          }
+        }}
+      >
+        Random Origin
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (selection.instance) {
+            selection.instance.rotate(selection.path, origin => origin - 30);
           }
         }}
       >
         Rotate
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (selection.instance) {
+            selection.instance.scaleX(selection.path, origin => origin + 0.1);
+          }
+        }}
+      >
+        LargerX
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (selection.instance) {
+            selection.instance.scaleY(selection.path, origin => origin + 0.1);
+          }
+        }}
+      >
+        LargerY
       </button>
 
       <svg

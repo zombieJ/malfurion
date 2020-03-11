@@ -52,7 +52,7 @@ export function getBox(ele: SVGGraphicsElement, pure: boolean = false) {
   }
 
   const { a, b, c, d, e, f } = ele.getCTM()!;
-  const matrix: Matrix = Matrix.fromTransform([a, b, c, d, e, f]);
+  const matrix: Matrix = Matrix.fromTransform(a, b, c, d, e, f);
 
   const leftTop = matrix.multiple(new Matrix(1, 3, [x, y, 1]));
   const rightTop = matrix.multiple(new Matrix(1, 3, [x + width, y, 1]));
