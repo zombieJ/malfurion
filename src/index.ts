@@ -22,6 +22,8 @@ class Malfurion {
 
   private svg: SVGSVGElement | null = null;
 
+  private debugHolder: SVGElement | null = null;
+
   private pathCache: PathCache = new PathCache();
 
   private clickEventHandlers = new Set<MalfurionEventHandler>();
@@ -88,8 +90,59 @@ class Malfurion {
     }
   };
 
-  private getDebugNodes = () => {
-    
+  private generateDebugHolder = () => {
+    if (!this.svg) {
+      return;
+    }
+
+    if (this.debugHolder) {
+      this.svg.removeChild(this.debugHolder);
+    }
+
+    if (!this.debug) {
+      return;
+    }
+
+    const debugHolder = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+
+    const fillDebugNodes = (
+      nodes: SVGNodeRecord[] | SVGNodeEntity[],
+      path: number[] = [],
+    ) => {
+      nodes.forEach((node, index) => {
+        const elePath = [...path, index];
+
+        const {
+          children,
+          rect,
+          originX = 0.5,
+          originY = 0.5,
+        } = node as SVGNodeEntity;
+
+        if (rect) {
+          const center = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            'circle',
+          );
+          center.style.pointerEvents = 'none';
+          center.setAttribute('cx', `${rect.x + rect.width * originX}`);
+          center.setAttribute('cy', `${rect.y + rect.height * originY}`);
+          center.setAttribute('r', '5');
+          center.setAttribute('fill', 'blue');
+          debugHolder.appendChild(center);
+        }
+
+        // Children
+        fillDebugNodes(children, elePath);
+      });
+    };
+
+    fillDebugNodes(this.entity.nodes);
+    this.debugHolder = debugHolder;
+    this.svg.appendChild(this.debugHolder);
   };
 
   getSVG = () => {
@@ -109,10 +162,8 @@ class Malfurion {
         'http://www.w3.org/2000/svg',
         'defs',
       );
-      const debugHolder = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'g',
-      );
+
+      this.svg = svg;
       (svg as any)[MALFURION_INSTANCE] = this;
       svg.appendChild(defs);
 
@@ -122,13 +173,7 @@ class Malfurion {
         path: false | number[] = [],
       ) => {
         nodes.forEach((node, index) => {
-          const {
-            tagName,
-            attributes,
-            children,
-            rect,
-            box,
-          } = node as SVGNodeEntity;
+          const { tagName, attributes, children } = node as SVGNodeEntity;
 
           const ele = document.createElementNS(
             'http://www.w3.org/2000/svg',
@@ -169,23 +214,6 @@ class Malfurion {
 
           // Append node
           holder.appendChild(ele);
-
-          // ================ DEBUG ================
-          if (this.debug && rect) {
-            (ele as any).debugRect = rect;
-            (ele as any).debugBox = box;
-            const center = document.createElementNS(
-              'http://www.w3.org/2000/svg',
-              'circle',
-            );
-            (center as any).debugNode = ele;
-            center.style.pointerEvents = 'none';
-            center.setAttribute('cx', `${rect.x + rect.width / 2}`);
-            center.setAttribute('cy', `${rect.y + rect.height / 2}`);
-            center.setAttribute('r', '5');
-            center.setAttribute('fill', 'blue');
-            debugHolder.appendChild(center);
-          }
         });
       };
 
@@ -193,7 +221,7 @@ class Malfurion {
       fillNodes(svg, this.entity.nodes);
 
       if (this.debug) {
-        svg.appendChild(debugHolder);
+        this.generateDebugHolder();
         console.timeEnd('getSVG');
       }
 
@@ -213,8 +241,6 @@ class Malfurion {
       svg.addEventListener('mouseout', (e: any) => {
         this.elementLeaveEventHandlers.forEach(callback => callback(e, this));
       });
-
-      this.svg = svg;
     }
 
     return this.svg;
@@ -281,11 +307,15 @@ class Malfurion {
     return (entity && (entity[prop] as number)) || initialValue;
   };
 
-  originX = (path: number[], value?: number | ((origin: number) => number)) =>
+  originX = (path: number[], value?: number | ((origin: number) => number)) => {
     this.internalTransform(path, 'originX', 0.5, value);
+    this.generateDebugHolder();
+  };
 
-  originY = (path: number[], value?: number | ((origin: number) => number)) =>
+  originY = (path: number[], value?: number | ((origin: number) => number)) => {
     this.internalTransform(path, 'originY', 0.5, value);
+    this.generateDebugHolder();
+  };
 
   rotate = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'rotate', 0, value, val => val % 360);
