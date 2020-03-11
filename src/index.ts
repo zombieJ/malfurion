@@ -330,7 +330,13 @@ class Malfurion {
     const entity = this.getNodeEntity(path);
 
     if (entity) {
-      const { rotate = 0, scaleX = 1, scaleY = 1 } = entity;
+      const {
+        rotate = 0,
+        scaleX = 1,
+        scaleY = 1,
+        originX = 0.5,
+        originY = 0.5,
+      } = entity;
       const ele = this.getElement(path);
       const { attributes } = entity;
 
@@ -341,8 +347,8 @@ class Malfurion {
       // Rotate matrix
       if (rotate !== 0) {
         const deg = (rotate / 180) * Math.PI;
-        const transX = box!.x + box!.width / 2;
-        const transY = box!.y + box!.height / 2;
+        const transX = box!.x + box!.width * originX;
+        const transY = box!.y + box!.height * originY;
         const transToMatrix = Matrix.fromTranslate(transX, transY);
         const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
         const rotateMatrix = Matrix.fromTransform(
@@ -362,8 +368,8 @@ class Malfurion {
 
       // Scale matrix
       if (scaleX !== 1 || scaleY !== 1) {
-        const transX = box!.x + box!.width / 2;
-        const transY = box!.y + box!.height / 2;
+        const transX = box!.x + box!.width * originX;
+        const transY = box!.y + box!.height * originY;
         const transToMatrix = Matrix.fromTranslate(transX, transY);
         const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
         const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);
