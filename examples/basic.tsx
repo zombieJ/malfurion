@@ -1,7 +1,7 @@
 import '../assets/index.less';
 import React from 'react';
 // import plantTXT from './svg/Plant';
-import Malfurion, { BoundingBox } from '../src';
+import Malfurion, { BoundingBox, BoundingBoxOrigin } from '../src';
 
 // const svgText = plantTXT;
 // const svgText = `
@@ -18,9 +18,10 @@ import Malfurion, { BoundingBox } from '../src';
 // `;
 const svgText = `
 <svg>
-  <circle cx="50" cy="50" r="20" fill="yellow" />
+  <circle cx="80" cy="80" r="20" fill="yellow" />
   <g transform="translate(150, 100)">
     <rect x="0" y="0" width="50" height="80" fill="green" />
+    <rect x="0" y="80" width="50" height="20" fill="yellow" />
   </g>
 </svg>
 `;
@@ -33,7 +34,13 @@ interface ProxyRef {
 function useElementSelection(
   overwriteProxyRef: React.RefObject<ProxyRef> = { current: null },
 ) {
-  const [rectProps, setRectProps] = React.useState<BoundingBox | null>(null);
+  const [boundingBox, setBoundingBox] = React.useState<BoundingBox | null>(
+    null,
+  );
+  const [
+    boundingBoxOrigin,
+    setBoundingBoxOrigin,
+  ] = React.useState<BoundingBoxOrigin | null>(null);
   const [current, setCurrent] = React.useState<Malfurion | null>(null);
   const [currentPath, setCurrentPath] = React.useState<number[]>([]);
   const proxyRef = React.useRef({ current, currentPath });
@@ -45,7 +52,8 @@ function useElementSelection(
 
   React.useEffect(() => {
     if (current) {
-      setRectProps(current.getBox(currentPath)!);
+      setBoundingBox(current.getBox(currentPath)!);
+      setBoundingBoxOrigin(current.getBoxOrigin(currentPath)!);
     }
   }, [current, currentPath]);
 
@@ -80,14 +88,14 @@ function useElementSelection(
   ) {
     if (current && currentPath) {
       callback(current, currentPath);
-      setRectProps(current.getBox(currentPath)!);
+      setBoundingBox(current.getBox(currentPath)!);
+      setBoundingBoxOrigin(current.getBoxOrigin(currentPath)!);
     }
   }
 
   return {
-    instance: current,
-    path: currentPath,
-    rect: rectProps,
+    boundingBox,
+    boundingBoxOrigin,
     updateSelection,
     proxyRef,
     transformCurrentPath,
@@ -179,13 +187,36 @@ export default function App() {
           fill="transparent"
           style={{ pointerEvents: 'none' }}
           vectorEffect="non-scaling-stroke"
-          {...selection.rect}
+          {...selection.boundingBox}
         />
+        {selection.boundingBoxOrigin && (
+          <g transform={selection.boundingBoxOrigin.transform}>
+            <line
+              x1={selection.boundingBoxOrigin.x}
+              x2={selection.boundingBoxOrigin.x}
+              y1={selection.boundingBoxOrigin.y - 5}
+              y2={selection.boundingBoxOrigin.y + 5}
+              stroke="#000"
+              strokeWidth={1}
+              vectorEffect="non-scaling-stroke"
+            />
+            <line
+              x1={selection.boundingBoxOrigin.x - 5}
+              x2={selection.boundingBoxOrigin.x + 5}
+              y1={selection.boundingBoxOrigin.y}
+              y2={selection.boundingBoxOrigin.y}
+              stroke="#000"
+              strokeWidth={1}
+              vectorEffect="non-scaling-stroke"
+            />
+          </g>
+        )}
+
         <rect
           stroke="blue"
           fill="transparent"
           style={{ pointerEvents: 'none' }}
-          {...hover.rect}
+          {...hover.boundingBox}
         />
       </svg>
     </div>

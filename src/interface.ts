@@ -11,6 +11,8 @@ export interface BoundingBox extends Partial<SVGBox> {
   transform?: string;
 }
 
+export type BoundingBoxOrigin = Required<Omit<BoundingBox, 'width' | 'height'>>;
+
 export interface SVGNodeRecord {
   tagName: string;
   attributes: Record<string, string>;
