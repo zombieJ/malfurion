@@ -295,19 +295,24 @@ class Malfurion {
     const entity = this.getNodeEntity(path);
 
     if (entity) {
-      let current: SVGNodeEntity | null = entity;
-      const box: BoundingBox = {
-        ...this.getOriginBox(path),
-        transform: this.getMatrix(path, this.getOriginBox(path)).toString(),
+      let mergedTransform = '';
+      let element: HTMLElement | null = (this.getElement(
+        path,
+      ) as unknown) as HTMLElement;
+      while (element && !(element as any)[MALFURION_INSTANCE]) {
+        console.log('>>>', element);
+        const transform = element.getAttribute('transform') || '';
+        mergedTransform = `${transform} ${mergedTransform}`;
+
+        element = element!.parentElement;
+      }
+
+      console.log('-=>', mergedTransform);
+
+      const box = {
+        ...this.getOriginBox(path, true),
+        transform: mergedTransform,
       };
-
-      // console.log('=>', box);
-
-      // while (current) {
-      //   current = current.parent;
-      // }
-
-      // const box = this.getOriginBox(path);
 
       return box;
     }
@@ -358,7 +363,7 @@ class Malfurion {
 
   getMatrix = (path: number[], box?: SVGBox | null) => {
     const entity = this.getNodeEntity(path);
-    let mergeMatrix = Matrix.fromTranslate(0, 0);
+    let mergeMatrix = Matrix.fromTranslate();
 
     if (entity) {
       const {

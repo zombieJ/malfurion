@@ -18,16 +18,12 @@ import Malfurion, { BoundingBox } from '../src';
 // `;
 const svgText = `
 <svg>
+  <circle cx="50" cy="50" r="20" fill="yellow" />
   <g transform="translate(150, 100)">
     <rect x="0" y="0" width="50" height="80" fill="green" />
   </g>
 </svg>
 `;
-// const svgText = `
-// <svg>
-//   <rect transform="translate(150, 100)" x="0" y="0" width="50" height="80" fill="green" />
-// </svg>
-// `;
 
 interface ProxyRef {
   current: Malfurion | null;

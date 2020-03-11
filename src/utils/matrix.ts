@@ -22,7 +22,7 @@ export default class Matrix {
     return instance;
   }
 
-  public static fromTranslate(x: number, y: number) {
+  public static fromTranslate(x: number = 0, y: number = 0) {
     return Matrix.fromTransform(1, 0, 0, 1, x, y);
   }
 
