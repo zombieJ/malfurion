@@ -29,6 +29,8 @@ export interface SVGNodeEntity extends SVGNodeRecord {
   originY?: number;
   scaleX?: number;
   scaleY?: number;
+  translateX?: number;
+  translateY?: number;
   opacity?: number;
 }
 

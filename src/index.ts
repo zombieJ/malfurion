@@ -361,6 +361,16 @@ class Malfurion {
   scaleY = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'scaleY', 1, value);
 
+  translateX = (
+    path: number[],
+    value?: number | ((origin: number) => number),
+  ) => this.internalTransform(path, 'translateX', 0, value);
+
+  translateY = (
+    path: number[],
+    value?: number | ((origin: number) => number),
+  ) => this.internalTransform(path, 'translateY', 0, value);
+
   getMatrix = (path: number[], box?: SVGBox | null) => {
     const entity = this.getNodeEntity(path);
     let mergeMatrix = Matrix.fromTranslate();
@@ -370,11 +380,19 @@ class Malfurion {
         rotate = 0,
         scaleX = 1,
         scaleY = 1,
+        translateX = 0,
+        translateY = 0,
         originX = DEFAULT_ORIGIN,
         originY = DEFAULT_ORIGIN,
       } = entity;
 
       const mergedBox = box || this.getOriginBox(path, true);
+
+      // Translate
+      if (translateX || translateY) {
+        const translateMatrix = Matrix.fromTranslate(translateX, translateY);
+        mergeMatrix = mergeMatrix.multiple(translateMatrix);
+      }
 
       // Rotate matrix
       if (rotate !== 0) {

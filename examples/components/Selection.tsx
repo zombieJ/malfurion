@@ -10,7 +10,6 @@ interface RectProps {
   offsetY: number;
   stroke: string;
   onMouseDown: React.MouseEventHandler<SVGElement>;
-  onMouseUp: React.MouseEventHandler<SVGElement>;
 }
 
 const Rect: React.FC<RectProps> = ({
@@ -21,7 +20,6 @@ const Rect: React.FC<RectProps> = ({
   offsetY,
   stroke,
   onMouseDown,
-  onMouseUp,
 }) => (
   <rect
     style={{ cursor: 'pointer' }}
@@ -33,7 +31,6 @@ const Rect: React.FC<RectProps> = ({
     stroke={stroke}
     vectorEffect="non-scaling-stroke"
     onMouseDown={onMouseDown}
-    onMouseUp={onMouseUp}
   />
 );
 
@@ -42,6 +39,7 @@ export interface SelectionProps {
   crossSize?: number;
   rectSize?: number;
   stroke?: string;
+  onTransform?: (matrix: Matrix) => {};
 }
 
 interface SelectionState {
@@ -58,10 +56,12 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
   componentDidMount() {
     document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
   }
 
   componentWillUnmount() {
     document.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
   }
 
   onMouseDown: React.MouseEventHandler<SVGElement> = ({ pageX, pageY }) => {
@@ -70,10 +70,21 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
   onMouseMove = (e: MouseEvent) => {
     const { startPoint } = this.state;
+    const { selection } = this.props;
     if (!startPoint) {
       return;
     }
-    console.log(e.pageX, e.pageY);
+
+    const offsetX = e.pageX - startPoint.x;
+    const offsetY = e.pageY - startPoint.y;
+    console.log(offsetX, offsetY);
+
+    // onTransform(Matrix.fromTranslate(1, 0));
+    selection.transformCurrentPath((instance, path) => {
+      console.log('!!!!');
+      instance.scaleX(path, value => value + 0.01);
+      instance.translateX(path, value => value + 0.01);
+    });
   };
 
   onMouseUp = () => {
@@ -110,7 +121,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       offsetY,
       stroke,
       onMouseDown: this.onMouseDown,
-      onMouseUp: this.onMouseUp,
     };
 
     return (

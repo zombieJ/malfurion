@@ -94,6 +94,16 @@ export default function App() {
       >
         LargerY
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          selection.transformCurrentPath((instance, path) => {
+            instance.translateX(path, origin => origin + 1);
+          });
+        }}
+      >
+        TranslateX
+      </button>
 
       <svg
         width={500}
