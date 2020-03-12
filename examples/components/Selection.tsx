@@ -47,12 +47,29 @@ interface SelectionState {
     x: number;
     y: number;
   } | null;
+  offsetX: number;
+  offsetY: number;
 }
 
 class Selection extends React.Component<SelectionProps, SelectionState> {
   state: SelectionState = {
     startPoint: null,
+    offsetX: 1,
+    offsetY: 1,
   };
+
+  static getDerivedStateFromProps({ selection }: SelectionProps) {
+    const newState: Partial<SelectionState> = {};
+
+    if (selection.boundingBox) {
+      const [a, b, c, d] = selection.boundingBox.transformMatrix!.toTransform();
+
+      newState.offsetX = (a * a + b * b) ** 0.5;
+      newState.offsetY = (c * c + d * d) ** 0.5;
+    }
+
+    return newState;
+  }
 
   componentDidMount() {
     document.addEventListener('mousemove', this.onMouseMove);
@@ -71,9 +88,11 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   onMouseMove = (e: MouseEvent) => {
     const { startPoint } = this.state;
     const { selection } = this.props;
-    if (!startPoint) {
+    if (!startPoint || !selection.boundingBox) {
       return;
     }
+
+    const { width } = selection.boundingBox;
 
     const offsetX = e.pageX - startPoint.x;
     const offsetY = e.pageY - startPoint.y;
@@ -81,9 +100,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     // onTransform(Matrix.fromTranslate(1, 0));
     selection.transformCurrentPath((instance, path) => {
-      console.log('!!!!');
-      instance.scaleX(path, value => value + 0.01);
-      instance.translateX(path, value => value + 0.01);
+      instance.scaleX(path, (width + offsetX) / width);
+      instance.translateX(path, offsetX / 2);
     });
   };
 
@@ -92,6 +110,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   };
 
   render() {
+    const { offsetX, offsetY } = this.state;
     const {
       selection,
       crossSize = 5,
@@ -103,15 +122,9 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       return null;
     }
 
-    const matrix = Matrix.fromTransformText(
-      selection.boundingBoxOrigin ? selection.boundingBoxOrigin.transform : '',
-    ).toTransform();
-
-    const [a, b, c, d] = matrix;
-
-    // Cross
-    const offsetX = (a * a + b * b) ** 0.5;
-    const offsetY = (c * c + d * d) ** 0.5;
+    // Box
+    const boxProps = { ...selection.boundingBox };
+    delete boxProps.transformMatrix;
 
     // Rects
     const { x, y, width, height } = selection.boundingBox!;
@@ -131,7 +144,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           fill="transparent"
           style={{ pointerEvents: 'none' }}
           vectorEffect="non-scaling-stroke"
-          {...selection.boundingBox}
+          {...boxProps}
         />
         {/* Center Cross */}
         <g

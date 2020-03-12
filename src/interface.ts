@@ -1,4 +1,4 @@
-import Malfurion from '.';
+import Malfurion, { Matrix } from '.';
 
 export interface SVGBox {
   x: number;
@@ -9,9 +9,12 @@ export interface SVGBox {
 
 export interface BoundingBox extends SVGBox {
   transform?: string;
+  transformMatrix?: Matrix;
 }
 
-export type BoundingBoxOrigin = Required<Omit<BoundingBox, 'width' | 'height'>>;
+export type BoundingBoxOrigin = Required<
+  Omit<BoundingBox, 'width' | 'height' | 'transformMatrix'>
+>;
 
 export interface SVGNodeRecord {
   tagName: string;
