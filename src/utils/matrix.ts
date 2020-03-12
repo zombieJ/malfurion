@@ -1,3 +1,5 @@
+import { parseTransformMatrix } from './svgUtil';
+
 export default class Matrix {
   protected matrix: number[][];
 
@@ -24,6 +26,17 @@ export default class Matrix {
 
   public static fromTranslate(x: number = 0, y: number = 0) {
     return Matrix.fromTransform(1, 0, 0, 1, x, y);
+  }
+
+  public static fromTransformText(str: string) {
+    const matrix = parseTransformMatrix(str);
+
+    if (matrix) {
+      const { a, b, c, d, e, f } = matrix;
+      return Matrix.fromTransform(a, b, c, d, e, f);
+    }
+
+    return Matrix.fromTranslate();
   }
 
   constructor(x: number, y: number, values?: number[]) {
@@ -88,16 +101,14 @@ export default class Matrix {
     return result;
   };
 
-  toTransform = (): [number, number, number, number, number, number] => {
-    return [
-      this.get(0, 0),
-      this.get(0, 1),
-      this.get(1, 0),
-      this.get(1, 1),
-      this.get(2, 0),
-      this.get(2, 1),
-    ];
-  };
+  toTransform = (): [number, number, number, number, number, number] => [
+    this.get(0, 0),
+    this.get(0, 1),
+    this.get(1, 0),
+    this.get(1, 1),
+    this.get(2, 0),
+    this.get(2, 1),
+  ];
 
   toString = () => {
     const transform = this.toTransform();

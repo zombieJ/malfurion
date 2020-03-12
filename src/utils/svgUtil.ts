@@ -187,3 +187,14 @@ export function getMergedTransform(element: SVGGraphicsElement): string {
 
   return mergedTransform;
 }
+
+export function parseTransformMatrix(transform: string) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  svg.appendChild(g);
+  document.body.appendChild(svg);
+  g.setAttribute('transform', transform);
+  const matrix = g.getCTM();
+  document.body.removeChild(svg);
+  return matrix;
+}

@@ -12,7 +12,7 @@ import {
 import Matrix from './utils/matrix';
 import { PathCache } from './utils/cacheUtil';
 
-export { BoundingBox, BoundingBoxOrigin };
+export { BoundingBox, BoundingBoxOrigin, Matrix };
 
 export const MALFURION_INSTANCE = '__Malfurion_Instance__';
 
@@ -290,6 +290,10 @@ class Malfurion {
       const mergedTransform = getMergedTransform(element);
 
       return {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
         ...this.getOriginBox(path, true),
         transform: mergedTransform,
       };

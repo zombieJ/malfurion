@@ -7,7 +7,7 @@ export interface SVGBox {
   height: number;
 }
 
-export interface BoundingBox extends Partial<SVGBox> {
+export interface BoundingBox extends SVGBox {
   transform?: string;
 }
 

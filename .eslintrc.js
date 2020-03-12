@@ -9,5 +9,7 @@ module.exports = {
     'react/no-array-index-key': 0,
     'react/sort-comp': 0,
     '@typescript-eslint/no-explicit-any': 0,
+    'import/no-extraneous-dependencies': 0,
+    'no-mixed-operators': 0,
   },
 };

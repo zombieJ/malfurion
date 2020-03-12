@@ -1,7 +1,9 @@
 import '../assets/index.less';
 import React from 'react';
 // import plantTXT from './svg/Plant';
-import Malfurion, { BoundingBox, BoundingBoxOrigin } from '../src';
+import Malfurion from '../src';
+import useElementSelection from './hooks/useElementSelection';
+import Selection from './components/Selection';
 
 // const svgText = plantTXT;
 // const svgText = `
@@ -26,82 +28,6 @@ const svgText = `
 </svg>
 `;
 
-interface ProxyRef {
-  current: Malfurion | null;
-  currentPath: number[];
-}
-
-function useElementSelection(
-  overwriteProxyRef: React.RefObject<ProxyRef> = { current: null },
-) {
-  const [boundingBox, setBoundingBox] = React.useState<BoundingBox | null>(
-    null,
-  );
-  const [
-    boundingBoxOrigin,
-    setBoundingBoxOrigin,
-  ] = React.useState<BoundingBoxOrigin | null>(null);
-  const [current, setCurrent] = React.useState<Malfurion | null>(null);
-  const [currentPath, setCurrentPath] = React.useState<number[]>([]);
-  const proxyRef = React.useRef({ current, currentPath });
-  proxyRef.current = {
-    current,
-    currentPath,
-    ...overwriteProxyRef.current,
-  };
-
-  React.useEffect(() => {
-    if (current) {
-      setBoundingBox(current.getBox(currentPath)!);
-      setBoundingBoxOrigin(current.getBoxOrigin(currentPath)!);
-    }
-  }, [current, currentPath]);
-
-  function updateSelection(
-    instance: Malfurion,
-    target: SVGGraphicsElement | null,
-  ) {
-    if (proxyRef.current.current !== instance) {
-      setCurrent(instance);
-      setCurrentPath([0]);
-    } else {
-      const path = instance.getPath(target) || [];
-
-      // Need to get common shared path
-      const commonPath = [];
-      for (let i = 0; i < proxyRef.current.currentPath.length; i += 1) {
-        const pos = proxyRef.current.currentPath[i];
-
-        if (pos === path[i]) {
-          commonPath.push(pos);
-        } else {
-          break;
-        }
-      }
-
-      setCurrentPath(path.slice(0, commonPath.length + 1));
-    }
-  }
-
-  function transformCurrentPath(
-    callback: (instance: Malfurion, path: number[]) => void,
-  ) {
-    if (current && currentPath) {
-      callback(current, currentPath);
-      setBoundingBox(current.getBox(currentPath)!);
-      setBoundingBoxOrigin(current.getBoxOrigin(currentPath)!);
-    }
-  }
-
-  return {
-    boundingBox,
-    boundingBoxOrigin,
-    updateSelection,
-    proxyRef,
-    transformCurrentPath,
-  };
-}
-
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
 
@@ -115,12 +41,12 @@ export default function App() {
     plant.addEventListener('click', ({ target }, instance) => {
       selection.updateSelection(instance, target);
     });
-    plant.addEventListener('elementEnter', ({ target }, instance) => {
-      hover.updateSelection(instance, target);
-    });
-    plant.addEventListener('elementLeave', (_, instance) => {
-      hover.updateSelection(instance, null);
-    });
+    // plant.addEventListener('elementEnter', ({ target }, instance) => {
+    //   hover.updateSelection(instance, target);
+    // });
+    // plant.addEventListener('elementLeave', (_, instance) => {
+    //   hover.updateSelection(instance, null);
+    // });
 
     svgRef.current!.appendChild(plant.getSVG());
   }, []);
@@ -189,39 +115,7 @@ export default function App() {
           {...hover.boundingBox}
         />
 
-        <rect
-          stroke="#000"
-          strokeWidth={1}
-          fill="transparent"
-          style={{ pointerEvents: 'none' }}
-          vectorEffect="non-scaling-stroke"
-          {...selection.boundingBox}
-        />
-        {selection.boundingBoxOrigin && (
-          <g
-            transform={selection.boundingBoxOrigin.transform}
-            style={{ pointerEvents: 'none' }}
-          >
-            <line
-              x1={selection.boundingBoxOrigin.x}
-              x2={selection.boundingBoxOrigin.x}
-              y1={selection.boundingBoxOrigin.y - 5}
-              y2={selection.boundingBoxOrigin.y + 5}
-              stroke="#000"
-              strokeWidth={1}
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1={selection.boundingBoxOrigin.x - 5}
-              x2={selection.boundingBoxOrigin.x + 5}
-              y1={selection.boundingBoxOrigin.y}
-              y2={selection.boundingBoxOrigin.y}
-              stroke="#000"
-              strokeWidth={1}
-              vectorEffect="non-scaling-stroke"
-            />
-          </g>
-        )}
+        <Selection selection={selection} />
       </svg>
     </div>
   );
