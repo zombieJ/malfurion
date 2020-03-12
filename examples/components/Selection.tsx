@@ -81,8 +81,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     document.removeEventListener('mouseup', this.onMouseUp);
   }
 
-  onMouseDown: React.MouseEventHandler<SVGElement> = ({ pageX, pageY }) => {
-    this.setState({ startPoint: { x: pageX, y: pageY } });
+  onMouseDown: React.MouseEventHandler<SVGElement> = ({ clientX, clientY }) => {
+    this.setState({ startPoint: { x: clientX, y: clientY } });
   };
 
   onMouseMove = (e: MouseEvent) => {
@@ -94,14 +94,24 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     const { width } = selection.boundingBox;
 
-    const offsetX = e.pageX - startPoint.x;
-    const offsetY = e.pageY - startPoint.y;
-    console.log(offsetX, offsetY);
+    const offsetX = e.clientX - startPoint.x;
+    const offsetY = e.clientY - startPoint.y;
+    console.log(offsetX, offsetY, e.clientX, e.clientY);
 
     // onTransform(Matrix.fromTranslate(1, 0));
     selection.transformCurrentPath((instance, path) => {
-      instance.scaleX(path, (width + offsetX) / width);
-      instance.translateX(path, offsetX / 2);
+      instance.scaleX(
+        path,
+        prevScaleX => (prevScaleX * width + offsetX) / width,
+      );
+      instance.translateX(path, prevTranslateX => prevTranslateX + offsetX / 2);
+    });
+
+    this.setState({
+      startPoint: {
+        x: e.clientX,
+        y: e.clientY,
+      },
     });
   };
 

@@ -21,7 +21,7 @@ import Selection from './components/Selection';
 const svgText = `
 <svg>
   <circle cx="80" cy="80" r="20" fill="yellow" />
-  <g transform="translate(150, 100)">
+  <g transform="translate(150 100) scale(1.5)">
     <rect x="0" y="0" width="50" height="80" fill="green" />
     <rect x="0" y="80" width="50" height="20" fill="yellow" />
   </g>
