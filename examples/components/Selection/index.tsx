@@ -168,10 +168,10 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
   onMouseUp = () => {
     const { selection } = this.props;
-    const { matrix, matrixStr } = this.state as any;
+    const { matrix, startPoint } = this.state as any;
     this.setState({ startPoint: null });
 
-    if (selection.boundingBox) {
+    if (selection.boundingBox && startPoint) {
       const {
         pureMergedTransform,
         x,
@@ -201,30 +201,38 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const transCenterY =
         ty + height * mixTransformMatrix.get(1, 1) * originX!;
 
-      const mixMatrix = Matrix.fromMixTransform({
-        translateX: transCenterX - centerX,
-        translateY: transCenterY - centerY,
-        rotate: 0,
-        scaleX: mixTransformMatrix.get(0, 0),
-        scaleY: mixTransformMatrix.get(1, 1),
-        originX: originX!,
-        originY: originY!,
+      // const mixMatrix = Matrix.fromMixTransform({
+      //   translateX: transCenterX - centerX,
+      //   translateY: transCenterY - centerY,
+      //   rotate: 0,
+      //   scaleX: mixTransformMatrix.get(0, 0),
+      //   scaleY: mixTransformMatrix.get(1, 1),
+      //   originX: originX!,
+      //   originY: originY!,
 
-        x,
-        y,
-        width,
-        height,
-      });
+      //   x,
+      //   y,
+      //   width,
+      //   height,
+      // });
 
-      console.warn('=> Data', x, y, width, height);
-      console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
-      console.warn('=> MixMok:', mixMatrix.toTransform());
+      // console.warn('=> Data', x, y, width, height);
+      // console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
+      // console.warn('=> MixMok:', mixMatrix.toTransform());
+
       // console.warn('=> Src:', mixTransformMatrix.toTransform());
       // console.warn(
       //   '=> Cal:',
       //   source.multiple(mixTransformMatrix).toTransform(),
       // );
       // console.warn('=> Tgt:', target.toTransform());
+
+      selection.transformCurrentPath((instance, path) => {
+        instance.scaleX(path, mixTransformMatrix.get(0, 0));
+        instance.scaleY(path, mixTransformMatrix.get(1, 1));
+        instance.translateX(path, transCenterX - centerX);
+        instance.translateY(path, transCenterY - centerY);
+      });
     }
   };
 
