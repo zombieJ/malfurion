@@ -10,6 +10,11 @@ export interface SelectionProps {
   onTransform?: (matrix: Matrix) => {};
 }
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 interface SelectionState {
   startPoint: {
     x: number;
@@ -17,6 +22,11 @@ interface SelectionState {
   } | null;
   offsetX: number;
   offsetY: number;
+
+  leftTop: Point;
+  rightTop: Point;
+  leftBottom: Point;
+  rightBottom: Point;
 }
 
 class Selection extends React.Component<SelectionProps, SelectionState> {
@@ -24,6 +34,11 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     startPoint: null,
     offsetX: 1,
     offsetY: 1,
+
+    leftTop: { x: 0, y: 0 },
+    rightTop: { x: 0, y: 0 },
+    leftBottom: { x: 0, y: 0 },
+    rightBottom: { x: 0, y: 0 },
   };
 
   static getDerivedStateFromProps({ selection }: SelectionProps) {
@@ -34,6 +49,14 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
       newState.offsetX = (a * a + b * b) ** 0.5;
       newState.offsetY = (c * c + d * d) ** 0.5;
+
+      // Points
+      const { x, y, width, height } = selection.boundingBox!;
+      const matrix = selection.boundingBox.transformMatrix!;
+      newState.leftTop = matrix.transformPosition(x, y);
+      newState.rightTop = matrix.transformPosition(x + width, y);
+      newState.leftBottom = matrix.transformPosition(x, y + height);
+      newState.rightBottom = matrix.transformPosition(x + width, y + height);
     }
 
     return newState;
@@ -114,13 +137,33 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   // };
 
   onMouseMove = (e: MouseEvent) => {
-    const { startPoint } = this.state;
+    const {
+      startPoint,
+      leftTop,
+      rightTop,
+      leftBottom,
+      rightBottom,
+    } = this.state;
     const { selection } = this.props;
     if (!startPoint || !selection.boundingBox) {
       return;
     }
 
     const { x, y, width, height } = selection.boundingBox;
+    console.log(
+      'Origin Matrix',
+      selection.boundingBox.transformMatrix!.toTransform(),
+    );
+
+    const matrix = Matrix.backFromPosition([
+      { source: { x, y }, target: { x: leftTop.x, y: leftTop.y } },
+      { source: { x: x + width, y }, target: { x: rightTop.x, y: rightTop.y } },
+      {
+        source: { x: x + width, y: y + height },
+        target: { x: rightBottom.x, y: rightBottom.y },
+      },
+    ]);
+    console.log('Trans Matrix', matrix.toTransform());
   };
 
   onMouseUp = () => {
@@ -128,7 +171,14 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   };
 
   render() {
-    const { offsetX, offsetY } = this.state;
+    const {
+      offsetX,
+      offsetY,
+      leftTop,
+      rightTop,
+      leftBottom,
+      rightBottom,
+    } = this.state;
     const {
       selection,
       crossSize = 5,
@@ -145,7 +195,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     delete boxProps.transformMatrix;
 
     // Points
-    const { x, y, width, height } = selection.boundingBox!;
     const pointProps = {
       r: rectSize / 2,
       fill: 'transparent',
@@ -154,11 +203,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       style: { cursor: 'pointer' },
       onMouseDown: this.onMouseDown,
     };
-    const matrix = selection.boundingBox.transformMatrix!;
-    const leftTop = matrix.transformPosition(x, y);
-    const rightTop = matrix.transformPosition(x + width, y);
-    const leftBottom = matrix.transformPosition(x, y + height);
-    const rightBottom = matrix.transformPosition(x + width, y + height);
 
     return (
       <>

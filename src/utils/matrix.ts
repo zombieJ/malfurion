@@ -63,7 +63,7 @@ export default class Matrix {
       [list[2].source.x, list[2].source.y, list[2].target.y],
     ]);
 
-    return Matrix.fromTransform(a, b, c, e, d, f);
+    return Matrix.fromTransform(a, b, c, d, e, f);
   }
 
   constructor(x: number, y: number, values?: number[]) {
