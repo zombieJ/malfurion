@@ -1,4 +1,5 @@
 import Matrix from '../src/utils/matrix';
+import { pointsToLine } from '../src/utils/mathUtil';
 
 describe('Utils', () => {
   describe('Matrix', () => {
@@ -42,6 +43,44 @@ describe('Utils', () => {
         [22, 28],
         [49, 64],
       ]);
+    });
+  });
+
+  describe('line', () => {
+    it('pointsToLine', () => {
+      expect(pointsToLine({ x: 1, y: 2 }, { x: 1, y: 3 }).toUnits()).toEqual([
+        null,
+        null,
+        1,
+        null,
+      ]);
+
+      expect(pointsToLine({ x: 1, y: 2 }, { x: 3, y: 2 }).toUnits()).toEqual([
+        null,
+        null,
+        null,
+        2,
+      ]);
+
+      expect(pointsToLine({ x: 1, y: 2 }, { x: 2, y: 3 }).toUnits()).toEqual([
+        1,
+        1,
+        null,
+        null,
+      ]);
+    });
+
+    it('crossPoint', () => {
+      const verticalLine = pointsToLine({ x: 1, y: 2 }, { x: 1, y: 3 });
+      const horizontalLine = pointsToLine({ x: 1, y: 2 }, { x: 9, y: 2 });
+      const line1 = pointsToLine({ x: 0, y: 1 }, { x: 1, y: 2 });
+      const line2 = pointsToLine({ x: 0, y: 1 }, { x: -1, y: 2 });
+
+      expect(verticalLine.crossPoint(horizontalLine)).toEqual({ x: 1, y: 2 });
+      expect(horizontalLine.crossPoint(verticalLine)).toEqual({ x: 1, y: 2 });
+      expect(verticalLine.crossPoint(line1)).toEqual({ x: 1, y: 2 });
+      expect(horizontalLine.crossPoint(line1)).toEqual({ x: 1, y: 2 });
+      expect(line1.crossPoint(line2)).toEqual({ x: 0, y: 1 });
     });
   });
 });

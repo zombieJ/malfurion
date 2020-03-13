@@ -1,6 +1,6 @@
 import { Point } from '../interface';
 import { parseTransformMatrix } from './svgUtil';
-import { resolveTernary } from './mathUitl';
+import { resolveTernary } from './mathUtil';
 
 export default class Matrix {
   protected matrix: number[][];
