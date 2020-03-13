@@ -1,5 +1,5 @@
 import React from 'react';
-import { Matrix } from '../../../src';
+import { Matrix, Line } from '../../../src';
 import useElementSelection from '../../hooks/useElementSelection';
 import OperatePoint, { Position } from './OperatePoint';
 
@@ -111,22 +111,30 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     );
 
     const positionList = [];
+    const topLine = Line.fromPoints(leftTop, rightTop);
+    const bottomLine = Line.fromPoints(leftBottom, rightBottom);
+    const leftLine = Line.fromPoints(leftTop, leftBottom);
+    const rightLine = Line.fromPoints(rightTop, rightBottom);
 
     switch (operatePosition) {
-      case 'rb':
+      case 'rb': {
         positionList.push({
           source: { x, y },
           target: leftTop,
         });
+
+        const newRightLine = rightLine.translate(offsetX, offsetY);
+        const crossPoint = topLine.crossPoint(newRightLine);
         positionList.push({
           source: { x: x + width, y },
-          target: { x: rightTop.x + offsetX, y: rightTop.y + offsetY },
+          target: { x: crossPoint.x, y: crossPoint.y },
         });
         positionList.push({
           source: { x: x + width, y: y + height },
           target: { x: rightBottom.x + offsetX, y: rightBottom.y + offsetY },
         });
         break;
+      }
 
       default:
       // Do nothing

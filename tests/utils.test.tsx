@@ -1,5 +1,5 @@
 import Matrix from '../src/utils/matrix';
-import { pointsToLine } from '../src/utils/mathUtil';
+import { Line } from '../src/utils/mathUtil';
 
 describe('Utils', () => {
   describe('Matrix', () => {
@@ -46,35 +46,26 @@ describe('Utils', () => {
     });
   });
 
-  describe('line', () => {
-    it('pointsToLine', () => {
-      expect(pointsToLine({ x: 1, y: 2 }, { x: 1, y: 3 }).toUnits()).toEqual([
-        null,
-        null,
-        1,
-        null,
-      ]);
+  describe('Line', () => {
+    it('fromPoints', () => {
+      expect(
+        Line.fromPoints({ x: 1, y: 2 }, { x: 1, y: 3 }).toUnits(),
+      ).toEqual([null, null, 1, null]);
 
-      expect(pointsToLine({ x: 1, y: 2 }, { x: 3, y: 2 }).toUnits()).toEqual([
-        null,
-        null,
-        null,
-        2,
-      ]);
+      expect(
+        Line.fromPoints({ x: 1, y: 2 }, { x: 3, y: 2 }).toUnits(),
+      ).toEqual([null, null, null, 2]);
 
-      expect(pointsToLine({ x: 1, y: 2 }, { x: 2, y: 3 }).toUnits()).toEqual([
-        1,
-        1,
-        null,
-        null,
-      ]);
+      expect(
+        Line.fromPoints({ x: 1, y: 2 }, { x: 2, y: 3 }).toUnits(),
+      ).toEqual([1, 1, null, null]);
     });
 
     it('crossPoint', () => {
-      const verticalLine = pointsToLine({ x: 1, y: 2 }, { x: 1, y: 3 });
-      const horizontalLine = pointsToLine({ x: 1, y: 2 }, { x: 9, y: 2 });
-      const line1 = pointsToLine({ x: 0, y: 1 }, { x: 1, y: 2 });
-      const line2 = pointsToLine({ x: 0, y: 1 }, { x: -1, y: 2 });
+      const verticalLine = Line.fromPoints({ x: 1, y: 2 }, { x: 1, y: 3 });
+      const horizontalLine = Line.fromPoints({ x: 1, y: 2 }, { x: 9, y: 2 });
+      const line1 = Line.fromPoints({ x: 0, y: 1 }, { x: 1, y: 2 });
+      const line2 = Line.fromPoints({ x: 0, y: 1 }, { x: -1, y: 2 });
 
       expect(verticalLine.crossPoint(horizontalLine)).toEqual({ x: 1, y: 2 });
       expect(horizontalLine.crossPoint(verticalLine)).toEqual({ x: 1, y: 2 });
@@ -84,9 +75,9 @@ describe('Utils', () => {
     });
 
     it('translate', () => {
-      const verticalLine = pointsToLine({ x: 1, y: 2 }, { x: 1, y: 3 });
-      const horizontalLine = pointsToLine({ x: 1, y: 2 }, { x: 9, y: 2 });
-      const line1 = pointsToLine({ x: 0, y: 1 }, { x: 1, y: 3 });
+      const verticalLine = Line.fromPoints({ x: 1, y: 2 }, { x: 1, y: 3 });
+      const horizontalLine = Line.fromPoints({ x: 1, y: 2 }, { x: 9, y: 2 });
+      const line1 = Line.fromPoints({ x: 0, y: 1 }, { x: 1, y: 3 });
 
       expect(verticalLine.translate(1, 1).toUnits()).toEqual([
         null,

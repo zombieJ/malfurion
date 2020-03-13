@@ -10,9 +10,10 @@ import {
   BoundingBoxOrigin,
 } from './interface';
 import Matrix from './utils/matrix';
+import { Line } from './utils/mathUtil';
 import { PathCache } from './utils/cacheUtil';
 
-export { BoundingBox, BoundingBoxOrigin, Matrix };
+export { BoundingBox, BoundingBoxOrigin, Matrix, Line };
 
 export const MALFURION_INSTANCE = '__Malfurion_Instance__';
 

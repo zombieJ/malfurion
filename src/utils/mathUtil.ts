@@ -32,7 +32,30 @@ export function resolveTernary(list: [number, number, number][]) {
   return [a, b, c];
 }
 
-class Line {
+export class Line {
+  /**
+   *
+   * @param p1 Point
+   * @param p2 Point
+   * @returns [a, b]
+   */
+  static fromPoints = (p0: Point, p1: Point): Line => {
+    // Vertical
+    if (p0.x === p1.x) {
+      return new Line(null, null, p0.x, null);
+    }
+
+    // Horizontal
+    if (p0.y === p1.y) {
+      return new Line(null, null, null, p0.y);
+    }
+
+    const a = (p0.y - p1.y) / (p0.x - p1.x);
+    const b = p0.y - a * p0.x;
+
+    return new Line(a, b);
+  };
+
   a: number | null;
 
   b: number | null;
@@ -91,27 +114,4 @@ class Line {
   };
 
   toUnits = () => [this.a, this.b, this.x, this.y];
-}
-
-/**
- *
- * @param p1 Point
- * @param p2 Point
- * @returns [a, b]
- */
-export function pointsToLine(p0: Point, p1: Point): Line {
-  // Vertical
-  if (p0.x === p1.x) {
-    return new Line(null, null, p0.x, null);
-  }
-
-  // Horizontal
-  if (p0.y === p1.y) {
-    return new Line(null, null, null, p0.y);
-  }
-
-  const a = (p0.y - p1.y) / (p0.x - p1.x);
-  const b = p0.y - a * p0.x;
-
-  return new Line(a, b);
 }
