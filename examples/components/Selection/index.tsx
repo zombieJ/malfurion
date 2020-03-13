@@ -158,20 +158,73 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     }
 
     const matrix = Matrix.backFromPosition(positionList);
-    console.log('=> Trans Matrix', matrix.toTransform());
+    // console.log('=> Trans Matrix', matrix.toTransform());
 
     this.setState({
+      matrix,
       matrixStr: matrix.toString(),
     });
   };
 
   onMouseUp = () => {
     const { selection } = this.props;
-    const { matrixStr } = this.state as any;
+    const { matrix, matrixStr } = this.state as any;
     this.setState({ startPoint: null });
 
     if (selection.boundingBox) {
-      console.log('=> Up:', matrixStr);
+      const {
+        pureMergedTransform,
+        x,
+        y,
+        width,
+        height,
+        originX,
+        originY,
+      } = selection.boundingBox;
+      const source = Matrix.fromTransformText(pureMergedTransform!);
+      const target = matrix as Matrix;
+      // console.warn(
+      //   '=> Up:\n',
+      //   source.toTransform(),
+      //   '\n',
+      //   target.toTransform(),
+      // );
+
+      const mixTransformMatrix = target.divide(source);
+
+      const centerX = x + width * originX!;
+      const centerY = y + height * originY!;
+      const [[tx], [ty]] = mixTransformMatrix
+        .multiple(new Matrix(1, 3, [x, y, 1]))
+        .getMatrix();
+      const transCenterX = tx + width * mixTransformMatrix.get(0, 0) * originX!;
+      const transCenterY =
+        ty + height * mixTransformMatrix.get(1, 1) * originX!;
+
+      const mixMatrix = Matrix.fromMixTransform({
+        translateX: transCenterX - centerX,
+        translateY: transCenterY - centerY,
+        rotate: 0,
+        scaleX: mixTransformMatrix.get(0, 0),
+        scaleY: mixTransformMatrix.get(1, 1),
+        originX: originX!,
+        originY: originY!,
+
+        x,
+        y,
+        width,
+        height,
+      });
+
+      console.warn('=> Data', x, y, width, height);
+      console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
+      console.warn('=> MixMok:', mixMatrix.toTransform());
+      // console.warn('=> Src:', mixTransformMatrix.toTransform());
+      // console.warn(
+      //   '=> Cal:',
+      //   source.multiple(mixTransformMatrix).toTransform(),
+      // );
+      // console.warn('=> Tgt:', target.toTransform());
     }
   };
 

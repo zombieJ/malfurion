@@ -1,9 +1,16 @@
+import { multiply, inv } from 'mathjs';
 import { Point } from '../interface';
 import { parseTransformMatrix } from './svgUtil';
 import { resolveTernary } from './mathUtil';
 
 export default class Matrix {
   protected matrix: number[][];
+
+  public static fromArray(matrixArr: number[][]) {
+    const instance = new Matrix(1, 1);
+    instance.matrix = matrixArr;
+    return instance;
+  }
 
   public static fromTransform(
     a: number,
@@ -177,24 +184,14 @@ export default class Matrix {
   getMatrix = () => this.matrix;
 
   multiple = (instance: Matrix) => {
-    const targetY = this.getY();
-    const targetX = instance.getX();
-    const calLen = this.getX();
+    const rets = multiply(this.getMatrix(), instance.getMatrix());
 
-    const result = new Matrix(targetX, targetY);
+    return Matrix.fromArray(rets);
+  };
 
-    for (let x = 0; x < targetX; x += 1) {
-      for (let y = 0; y < targetY; y += 1) {
-        let val = 0;
-
-        for (let i = 0; i < calLen; i += 1) {
-          val += this.get(i, y) * instance.get(x, i);
-        }
-        result.set(x, y, val);
-      }
-    }
-
-    return result;
+  divide = (instance: Matrix) => {
+    const inverse = Matrix.fromArray(inv(instance.getMatrix()));
+    return inverse.multiple(this);
   };
 
   transformPosition = (x: number, y: number) => {

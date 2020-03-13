@@ -10,10 +10,15 @@ export interface SVGBox {
 export interface BoundingBox extends SVGBox {
   mergedTransform?: string;
   pureMergedTransform?: string;
+  originX?: number;
+  originY?: number;
 }
 
 export type BoundingBoxOrigin = Required<
-  Omit<BoundingBox, 'width' | 'height' | 'pureMergedTransform'>
+  Omit<
+    BoundingBox,
+    'width' | 'height' | 'pureMergedTransform' | 'originX' | 'originY'
+  >
 >;
 
 export interface SVGNodeRecord {

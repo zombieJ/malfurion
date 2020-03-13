@@ -287,7 +287,8 @@ class Malfurion {
   /** Return  */
   getBox = (path: number[]): BoundingBox | null => {
     const element = this.getElement(path);
-    if (element) {
+    const entity = this.getNodeEntity(path);
+    if (element && entity) {
       const mergedTransform = this.getMergedTransform(path);
       const pureMergedTransform = this.getMergedTransform(path, true);
 
@@ -297,6 +298,8 @@ class Malfurion {
         width: 0,
         height: 0,
         ...this.getOriginBox(path, true),
+        originX: entity.originX || DEFAULT_ORIGIN,
+        originY: entity.originY || DEFAULT_ORIGIN,
         mergedTransform,
         pureMergedTransform,
       };

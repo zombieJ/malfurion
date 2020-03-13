@@ -1,3 +1,4 @@
+import * as math from 'mathjs';
 import Matrix from '../src/utils/matrix';
 import { Line } from '../src/utils/mathUtil';
 
