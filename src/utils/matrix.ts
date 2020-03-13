@@ -1,4 +1,10 @@
 import { parseTransformMatrix } from './svgUtil';
+import { resolveTernary } from './mathUitl';
+
+interface Position {
+  x: number;
+  y: number;
+}
 
 export default class Matrix {
   protected matrix: number[][];
@@ -37,6 +43,27 @@ export default class Matrix {
     }
 
     return Matrix.fromTranslate();
+  }
+
+  public static backFromPosition(
+    list: {
+      source: Position;
+      target: Position;
+    }[],
+  ) {
+    const [a, c, e] = resolveTernary([
+      [list[0].source.x, list[0].source.y, list[0].target.x],
+      [list[1].source.x, list[1].source.y, list[1].target.x],
+      [list[2].source.x, list[2].source.y, list[2].target.x],
+    ]);
+
+    const [b, d, f] = resolveTernary([
+      [list[0].source.x, list[0].source.y, list[0].target.y],
+      [list[1].source.x, list[1].source.y, list[1].target.y],
+      [list[2].source.x, list[2].source.y, list[2].target.y],
+    ]);
+
+    return Matrix.fromTransform(a, b, c, e, d, f);
   }
 
   constructor(x: number, y: number, values?: number[]) {
