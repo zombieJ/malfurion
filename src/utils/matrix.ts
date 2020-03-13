@@ -101,6 +101,15 @@ export default class Matrix {
     return result;
   };
 
+  transformPosition = (x: number, y: number) => {
+    const matrix = new Matrix(1, 3, [x, y, 1]);
+    const ret = this.multiple(matrix);
+    return {
+      x: ret.get(0, 0),
+      y: ret.get(0, 1),
+    };
+  };
+
   toTransform = (): [number, number, number, number, number, number] => [
     this.get(0, 0),
     this.get(0, 1),

@@ -2,38 +2,6 @@ import React from 'react';
 import { Matrix } from '../../src';
 import useElementSelection from '../hooks/useElementSelection';
 
-interface RectProps {
-  size: number;
-  x: number;
-  y: number;
-  offsetX: number;
-  offsetY: number;
-  stroke: string;
-  onMouseDown: React.MouseEventHandler<SVGElement>;
-}
-
-const Rect: React.FC<RectProps> = ({
-  size,
-  x,
-  y,
-  offsetX,
-  offsetY,
-  stroke,
-  onMouseDown,
-}) => (
-  <rect
-    style={{ cursor: 'pointer' }}
-    x={x - size / 2 / offsetX}
-    y={y - size / 2 / offsetY}
-    width={size / offsetX}
-    height={size / offsetY}
-    fill="#FFF"
-    stroke={stroke}
-    vectorEffect="non-scaling-stroke"
-    onMouseDown={onMouseDown}
-  />
-);
-
 export interface SelectionProps {
   selection: ReturnType<typeof useElementSelection>;
   crossSize?: number;
@@ -85,6 +53,66 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     this.setState({ startPoint: { x: clientX, y: clientY } });
   };
 
+  // onMouseMove123 = (e: MouseEvent) => {
+  //   const { startPoint } = this.state;
+  //   const { selection } = this.props;
+  //   if (!startPoint || !selection.boundingBox) {
+  //     return;
+  //   }
+
+  //   const { width, height } = selection.boundingBox;
+
+  //   const offsetX = e.clientX - startPoint.x;
+  //   const offsetY = e.clientY - startPoint.y;
+  //   // console.log(offsetX, offsetY, e.clientX, e.clientY);
+
+  //   // onTransform(Matrix.fromTranslate(1, 0));
+  //   selection.transformCurrentPath((instance, path) => {
+  //     const rotate = instance.rotate(path);
+  //     // console.log('>>>', rotate);
+
+  //     const angle = (rotate / 180) * Math.PI;
+  //     const cosA = Math.cos(angle);
+  //     // const sinA = Math.sin(angle);
+  //     // const cosA = 1;
+  //     const sinA = 1;
+
+  //     // if (rotate % 90 === 0 && rotate % 180 !== 0) {
+  //     //   cosA = 1;
+  //     // }
+
+  //     // ScaleX
+  //     instance.scaleX(path, prevScaleX => {
+  //       if (rotate % 90 === 0 && rotate % 180 !== 0) {
+  //         // Vertical status will not affect by offsetX
+  //         return prevScaleX;
+  //       }
+  //       return (prevScaleX * width + offsetX / cosA) / width;
+  //     });
+  //     instance.translateX(path, prevTranslateX => {
+  //       if (rotate % 90 === 0 && rotate % 180 !== 0) {
+  //         // Vertical status will not affect by offsetX
+  //         return prevTranslateX;
+  //       }
+  //       return prevTranslateX + offsetX / 2;
+  //     });
+
+  //     // ScaleY
+  //     // instance.scaleY(
+  //     //   path,
+  //     //   prevScaleY => (prevScaleY * height + offsetY / sinA) / height,
+  //     // );
+  //     // instance.translateY(path, prevTranslateY => prevTranslateY + offsetY / 2);
+  //   });
+
+  //   this.setState({
+  //     startPoint: {
+  //       x: e.clientX,
+  //       y: e.clientY,
+  //     },
+  //   });
+  // };
+
   onMouseMove = (e: MouseEvent) => {
     const { startPoint } = this.state;
     const { selection } = this.props;
@@ -92,27 +120,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       return;
     }
 
-    const { width } = selection.boundingBox;
-
-    const offsetX = e.clientX - startPoint.x;
-    const offsetY = e.clientY - startPoint.y;
-    console.log(offsetX, offsetY, e.clientX, e.clientY);
-
-    // onTransform(Matrix.fromTranslate(1, 0));
-    selection.transformCurrentPath((instance, path) => {
-      instance.scaleX(
-        path,
-        prevScaleX => (prevScaleX * width + offsetX) / width,
-      );
-      instance.translateX(path, prevTranslateX => prevTranslateX + offsetX / 2);
-    });
-
-    this.setState({
-      startPoint: {
-        x: e.clientX,
-        y: e.clientY,
-      },
-    });
+    const { x, y, width, height } = selection.boundingBox;
   };
 
   onMouseUp = () => {
@@ -136,15 +144,21 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     const boxProps = { ...selection.boundingBox };
     delete boxProps.transformMatrix;
 
-    // Rects
+    // Points
     const { x, y, width, height } = selection.boundingBox!;
-    const reactSharedProps = {
-      size: rectSize,
-      offsetX,
-      offsetY,
+    const pointProps = {
+      r: rectSize / 2,
+      fill: 'transparent',
       stroke,
+      vectorEffect: 'non-scaling-stroke',
+      style: { cursor: 'pointer' },
       onMouseDown: this.onMouseDown,
     };
+    const matrix = selection.boundingBox.transformMatrix!;
+    const leftTop = matrix.transformPosition(x, y);
+    const rightTop = matrix.transformPosition(x + width, y);
+    const leftBottom = matrix.transformPosition(x, y + height);
+    const rightBottom = matrix.transformPosition(x + width, y + height);
 
     return (
       <>
@@ -181,18 +195,11 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           />
         </g>
 
-        {/* Rects */}
-        <g transform={selection.boundingBoxOrigin.transform}>
-          <Rect {...reactSharedProps} size={rectSize} x={x} y={y} />
-          <Rect {...reactSharedProps} size={rectSize} x={x + width} y={y} />
-          <Rect {...reactSharedProps} size={rectSize} x={x} y={y + height} />
-          <Rect
-            {...reactSharedProps}
-            size={rectSize}
-            x={x + width}
-            y={y + height}
-          />
-        </g>
+        {/* Points */}
+        <circle {...pointProps} cx={leftTop.x} cy={leftTop.y} />
+        <circle {...pointProps} cx={rightTop.x} cy={rightTop.y} />
+        <circle {...pointProps} cx={leftBottom.x} cy={leftBottom.y} />
+        <circle {...pointProps} cx={rightBottom.x} cy={rightBottom.y} />
       </>
     );
   }

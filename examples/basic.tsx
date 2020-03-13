@@ -68,11 +68,21 @@ export default function App() {
         type="button"
         onClick={() => {
           selection.transformCurrentPath((instance, path) => {
+            instance.rotate(path, origin => origin - 30);
+          });
+        }}
+      >
+        RotateUp
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          selection.transformCurrentPath((instance, path) => {
             instance.rotate(path, origin => origin + 30);
           });
         }}
       >
-        Rotate
+        RotateDown
       </button>
       <button
         type="button"
@@ -98,7 +108,7 @@ export default function App() {
         type="button"
         onClick={() => {
           selection.transformCurrentPath((instance, path) => {
-            instance.translateX(path, origin => origin + 1);
+            instance.translateX(path, origin => origin + 10);
           });
         }}
       >
