@@ -56,3 +56,8 @@ export type MalfurionEventType =
   | 'mouseLeave'
   | 'elementEnter'
   | 'elementLeave';
+
+export interface Point {
+  x: number;
+  y: number;
+}

@@ -1,10 +1,6 @@
+import { Point } from '../interface';
 import { parseTransformMatrix } from './svgUtil';
 import { resolveTernary } from './mathUitl';
-
-interface Position {
-  x: number;
-  y: number;
-}
 
 export default class Matrix {
   protected matrix: number[][];
@@ -47,8 +43,8 @@ export default class Matrix {
 
   public static backFromPosition(
     list: {
-      source: Position;
-      target: Position;
+      source: Point;
+      target: Point;
     }[],
   ) {
     const [a, c, e] = resolveTernary([
