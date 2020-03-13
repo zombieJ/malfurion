@@ -329,12 +329,21 @@ class Malfurion {
     ignoreCurrentMalfurion = false,
   ): string => {
     let mergedTransform = '';
-    let entity = this.getNodeEntity(path);
+    const endNodeEntity = this.getNodeEntity(path);
+    let entity = endNodeEntity;
     while (entity) {
       const { attributes } = entity;
-      mergedTransform = `${attributes.transform || ''} ${this.getMatrix(
-        this.pathCache.getPath(entity)!,
-      ).toString()} ${mergedTransform}`
+
+      // Skip if ignoreCurrentMalfurion
+      let malfurionTransform = '';
+      if (!ignoreCurrentMalfurion || endNodeEntity !== entity) {
+        malfurionTransform = this.getMatrix(
+          this.pathCache.getPath(entity)!,
+        ).toString();
+      }
+
+      mergedTransform = `${attributes.transform ||
+        ''} ${malfurionTransform} ${mergedTransform}`
         .replace(/\s+/, ' ')
         .trim();
 
