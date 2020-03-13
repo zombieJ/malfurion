@@ -118,17 +118,21 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     switch (operatePosition) {
       case 'rb': {
+        // LT
         positionList.push({
           source: { x, y },
           target: leftTop,
         });
 
+        // RT
         const newRightLine = rightLine.translate(offsetX, offsetY);
         const crossPoint = topLine.crossPoint(newRightLine);
         positionList.push({
           source: { x: x + width, y },
           target: { x: crossPoint.x, y: crossPoint.y },
         });
+
+        // RB
         positionList.push({
           source: { x: x + width, y: y + height },
           target: { x: rightBottom.x + offsetX, y: rightBottom.y + offsetY },
@@ -176,7 +180,11 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     }
 
     // Box
-    const boxProps = { ...selection.boundingBox };
+    const boxProps = {
+      ...selection.boundingBox,
+      transform: selection.boundingBox.mergedTransform,
+    };
+    delete boxProps.mergedTransform;
     delete boxProps.transformMatrix;
 
     // Points
@@ -199,7 +207,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         />
         {/* Center Cross */}
         <g
-          transform={selection.boundingBoxOrigin.transform}
+          transform={selection.boundingBoxOrigin.mergedTransform}
           style={{ pointerEvents: 'none' }}
         >
           <line

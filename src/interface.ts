@@ -8,7 +8,7 @@ export interface SVGBox {
 }
 
 export interface BoundingBox extends SVGBox {
-  transform?: string;
+  mergedTransform?: string;
   transformMatrix?: Matrix;
 }
 

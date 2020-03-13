@@ -1,4 +1,4 @@
-import { getBox, analysisSVG, getMergedTransform } from './utils/svgUtil';
+import { getBox, analysisSVG } from './utils/svgUtil';
 import {
   SVGEntity,
   SVGNodeEntity,
@@ -115,7 +115,7 @@ class Malfurion {
     );
 
     this.pathCache.getPathList().forEach(path => {
-      const mergedTransform = getMergedTransform(this.getElement(path)!);
+      const mergedTransform = this.getMergedTransform(path);
       const box = this.getOriginBox(path, true);
       const entity = this.getNodeEntity(path);
 
@@ -179,7 +179,7 @@ class Malfurion {
           const elePath = path ? [...path, index] : path;
           if (elePath) {
             ele.setAttribute('data-path', elePath.join('-'));
-            this.pathCache.set(ele, elePath);
+            this.pathCache.set(ele, elePath, node as SVGNodeEntity);
           }
 
           // Attributes
@@ -288,7 +288,7 @@ class Malfurion {
   getBox = (path: number[]): BoundingBox | null => {
     const element = this.getElement(path);
     if (element) {
-      const mergedTransform = getMergedTransform(element);
+      const mergedTransform = this.getMergedTransform(path);
 
       return {
         x: 0,
@@ -296,7 +296,7 @@ class Malfurion {
         width: 0,
         height: 0,
         ...this.getOriginBox(path, true),
-        transform: mergedTransform,
+        mergedTransform,
         transformMatrix: Matrix.fromTransformText(mergedTransform),
       };
     }
@@ -310,18 +310,38 @@ class Malfurion {
 
     if (element && entity) {
       const { originX = DEFAULT_ORIGIN, originY = DEFAULT_ORIGIN } = entity;
-      const mergedTransform = getMergedTransform(element);
+      const mergedTransform = this.getMergedTransform(path);
 
       const box = this.getOriginBox(path, true)!;
 
       return {
         x: box.x + box.width * originX,
         y: box.y + box.height * originY,
-        transform: mergedTransform,
+        mergedTransform,
       };
     }
 
     return null;
+  };
+
+  getMergedTransform = (
+    path: number[],
+    ignoreCurrentMalfurion = false,
+  ): string => {
+    let mergedTransform = '';
+    let entity = this.getNodeEntity(path);
+    while (entity) {
+      const { attributes } = entity;
+      mergedTransform = `${attributes.transform || ''} ${this.getMatrix(
+        this.pathCache.getPath(entity)!,
+      ).toString()} ${mergedTransform}`
+        .replace(/\s+/, ' ')
+        .trim();
+
+      entity = entity.parent;
+    }
+
+    return mergedTransform;
   };
 
   private internalTransform = (
@@ -373,7 +393,7 @@ class Malfurion {
     value?: number | ((origin: number) => number),
   ) => this.internalTransform(path, 'translateY', 0, value);
 
-  getMatrix = (path: number[], box?: SVGBox | null) => {
+  getMatrix = (path: number[]) => {
     const entity = this.getNodeEntity(path);
     let mergeMatrix = Matrix.fromTranslate();
 
@@ -388,7 +408,7 @@ class Malfurion {
         originY = DEFAULT_ORIGIN,
       } = entity;
 
-      const mergedBox = box || this.getOriginBox(path, true);
+      const mergedBox = this.getOriginBox(path, true);
 
       // Translate
       if (translateX || translateY) {
