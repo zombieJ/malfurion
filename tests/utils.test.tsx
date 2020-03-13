@@ -82,5 +82,28 @@ describe('Utils', () => {
       expect(horizontalLine.crossPoint(line1)).toEqual({ x: 1, y: 2 });
       expect(line1.crossPoint(line2)).toEqual({ x: 0, y: 1 });
     });
+
+    it('translate', () => {
+      const verticalLine = pointsToLine({ x: 1, y: 2 }, { x: 1, y: 3 });
+      const horizontalLine = pointsToLine({ x: 1, y: 2 }, { x: 9, y: 2 });
+      const line1 = pointsToLine({ x: 0, y: 1 }, { x: 1, y: 3 });
+
+      expect(verticalLine.translate(1, 1).toUnits()).toEqual([
+        null,
+        null,
+        2,
+        null,
+      ]);
+      expect(horizontalLine.translate(1, 1).toUnits()).toEqual([
+        null,
+        null,
+        null,
+        3,
+      ]);
+
+      expect(line1.toUnits()).toEqual([2, 1, null, null]);
+      expect(line1.translate(0, 1).toUnits()).toEqual([2, 2, null, null]);
+      expect(line1.translate(1, 1).toUnits()).toEqual([2, 0, null, null]);
+    });
   });
 });

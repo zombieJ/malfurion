@@ -53,6 +53,17 @@ class Line {
     this.y = y;
   }
 
+  translate = (x: number = 0, y: number = 0) => {
+    if (this.isVertical()) {
+      return new Line(this.a, this.b, this.x! + x, this.y);
+    }
+    if (this.isHorizontal()) {
+      return new Line(this.a, this.b, this.x, this.y! + y);
+    }
+
+    return new Line(this.a, this.b! + y - this.a! * x, this.x, this.y);
+  };
+
   isVertical = () => this.x !== null;
 
   isHorizontal = () => this.y !== null;
