@@ -108,9 +108,17 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     const { x, y, width, height } = selection.boundingBox;
     console.log(
+      '=> Strings:',
+      selection.boundingBox.mergedTransform,
+      selection.boundingBox.pureMergedTransform,
+    );
+    console.log(
       '=> Origin Matrix',
       Matrix.fromTransformText(
         selection.boundingBox.mergedTransform!,
+      ).toTransform(),
+      Matrix.fromTransformText(
+        selection.boundingBox.pureMergedTransform!,
       ).toTransform(),
       operatePosition,
     );

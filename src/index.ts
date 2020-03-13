@@ -289,6 +289,7 @@ class Malfurion {
     const element = this.getElement(path);
     if (element) {
       const mergedTransform = this.getMergedTransform(path);
+      const pureMergedTransform = this.getMergedTransform(path, true);
 
       return {
         x: 0,
@@ -297,6 +298,7 @@ class Malfurion {
         height: 0,
         ...this.getOriginBox(path, true),
         mergedTransform,
+        pureMergedTransform,
       };
     }
 
@@ -403,65 +405,36 @@ class Malfurion {
 
   getMatrix = (path: number[]) => {
     const entity = this.getNodeEntity(path);
-    let mergeMatrix = Matrix.fromTranslate();
 
-    if (entity) {
-      const {
-        rotate = 0,
-        scaleX = 1,
-        scaleY = 1,
-        translateX = 0,
-        translateY = 0,
-        originX = DEFAULT_ORIGIN,
-        originY = DEFAULT_ORIGIN,
-      } = entity;
-
-      const mergedBox = this.getOriginBox(path, true);
-
-      // Translate
-      if (translateX || translateY) {
-        const translateMatrix = Matrix.fromTranslate(translateX, translateY);
-        mergeMatrix = mergeMatrix.multiple(translateMatrix);
-      }
-
-      // Rotate matrix
-      if (rotate !== 0) {
-        const deg = (rotate / 180) * Math.PI;
-        const transX = mergedBox!.x + mergedBox!.width * originX;
-        const transY = mergedBox!.y + mergedBox!.height * originY;
-        const transToMatrix = Matrix.fromTranslate(transX, transY);
-        const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
-        const rotateMatrix = Matrix.fromTransform(
-          Math.cos(deg),
-          Math.sin(deg),
-          -Math.sin(deg),
-          Math.cos(deg),
-          0,
-          0,
-        );
-
-        mergeMatrix = mergeMatrix
-          .multiple(transToMatrix)
-          .multiple(rotateMatrix)
-          .multiple(transBackMatrix);
-      }
-
-      // Scale matrix
-      if (scaleX !== 1 || scaleY !== 1) {
-        const transX = mergedBox!.x + mergedBox!.width * originX;
-        const transY = mergedBox!.y + mergedBox!.height * originY;
-        const transToMatrix = Matrix.fromTranslate(transX, transY);
-        const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
-        const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);
-
-        mergeMatrix = mergeMatrix
-          .multiple(transToMatrix)
-          .multiple(scaleMatrix)
-          .multiple(transBackMatrix);
-      }
+    if (!entity) {
+      return Matrix.fromTranslate();
     }
 
-    return mergeMatrix;
+    const { x, y, width, height } = this.getOriginBox(path, true)!;
+    const {
+      rotate = 0,
+      scaleX = 1,
+      scaleY = 1,
+      translateX = 0,
+      translateY = 0,
+      originX = DEFAULT_ORIGIN,
+      originY = DEFAULT_ORIGIN,
+    } = entity;
+
+    return Matrix.fromMixTransform({
+      translateX,
+      translateY,
+      rotate,
+      scaleX,
+      scaleY,
+      originX,
+      originY,
+
+      x,
+      y,
+      width,
+      height,
+    });
   };
 
   refresh = (path: number[]) => {

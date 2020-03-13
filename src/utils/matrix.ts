@@ -62,6 +62,79 @@ export default class Matrix {
     return Matrix.fromTransform(a, b, c, d, e, f);
   }
 
+  public static fromMixTransform({
+    translateX,
+    translateY,
+    rotate,
+    scaleX,
+    scaleY,
+    originX,
+    originY,
+
+    x,
+    y,
+    width,
+    height,
+  }: {
+    translateX: number;
+    translateY: number;
+    rotate: number;
+    scaleX: number;
+    scaleY: number;
+    originX: number;
+    originY: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) {
+    let mergeMatrix = Matrix.fromTranslate();
+
+    // Translate
+    if (translateX || translateY) {
+      const translateMatrix = Matrix.fromTranslate(translateX, translateY);
+      mergeMatrix = mergeMatrix.multiple(translateMatrix);
+    }
+
+    // Rotate matrix
+    if (rotate !== 0) {
+      const deg = (rotate / 180) * Math.PI;
+      const transX = x + width * originX;
+      const transY = y + height * originY;
+      const transToMatrix = Matrix.fromTranslate(transX, transY);
+      const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
+      const rotateMatrix = Matrix.fromTransform(
+        Math.cos(deg),
+        Math.sin(deg),
+        -Math.sin(deg),
+        Math.cos(deg),
+        0,
+        0,
+      );
+
+      mergeMatrix = mergeMatrix
+        .multiple(transToMatrix)
+        .multiple(rotateMatrix)
+        .multiple(transBackMatrix);
+    }
+
+    // Scale matrix
+    if (scaleX !== 1 || scaleY !== 1) {
+      const transX = x + width * originX;
+      const transY = y + height * originY;
+      const transToMatrix = Matrix.fromTranslate(transX, transY);
+      const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
+      const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+      mergeMatrix = mergeMatrix
+        .multiple(transToMatrix)
+        .multiple(scaleMatrix)
+        .multiple(transBackMatrix);
+    }
+
+    return mergeMatrix;
+  }
+
   constructor(x: number, y: number, values?: number[]) {
     this.matrix = [];
 
