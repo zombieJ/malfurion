@@ -105,7 +105,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     const { x, y, width, height } = selection.boundingBox;
     console.log(
-      'Origin Matrix',
+      '=> Origin Matrix',
       selection.boundingBox.transformMatrix!.toTransform(),
       operatePosition,
     );
@@ -145,14 +145,11 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     }
 
     const matrix = Matrix.backFromPosition(positionList);
-    console.log('Trans Matrix', matrix.toTransform());
+    console.log('=> Trans Matrix', matrix.toTransform());
 
-    // this.setState({
-    //   startPoint: {
-    //     x: e.clientX,
-    //     y: e.clientY,
-    //   },
-    // });
+    this.setState({
+      matrixStr: matrix.toString(),
+    });
   };
 
   onMouseUp = () => {
@@ -167,6 +164,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       rightTop,
       leftBottom,
       rightBottom,
+      matrixStr,
     } = this.state;
     const {
       selection,
@@ -197,6 +195,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     return (
       <>
+        {/* Selection Rect */}
         <rect
           stroke={stroke}
           strokeWidth={1}
@@ -204,6 +203,16 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           style={{ pointerEvents: 'none' }}
           vectorEffect="non-scaling-stroke"
           {...boxProps}
+        />
+
+        <rect
+          stroke="red"
+          strokeWidth={1}
+          fill="transparent"
+          style={{ pointerEvents: 'none' }}
+          vectorEffect="non-scaling-stroke"
+          {...boxProps}
+          transform={this.state.matrixStr}
         />
         {/* Center Cross */}
         <g
