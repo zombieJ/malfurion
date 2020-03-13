@@ -297,7 +297,6 @@ class Malfurion {
         height: 0,
         ...this.getOriginBox(path, true),
         mergedTransform,
-        transformMatrix: Matrix.fromTransformText(mergedTransform),
       };
     }
 

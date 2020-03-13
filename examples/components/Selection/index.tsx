@@ -49,14 +49,17 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     const newState: Partial<SelectionState> = {};
 
     if (selection.boundingBox) {
-      const [a, b, c, d] = selection.boundingBox.transformMatrix!.toTransform();
+      const transformMatrix = Matrix.fromTransformText(
+        selection.boundingBox.mergedTransform!,
+      );
+      const [a, b, c, d] = transformMatrix.toTransform();
 
       newState.offsetX = (a * a + b * b) ** 0.5;
       newState.offsetY = (c * c + d * d) ** 0.5;
 
       // Points
       const { x, y, width, height } = selection.boundingBox!;
-      const matrix = selection.boundingBox.transformMatrix!;
+      const matrix = transformMatrix;
       newState.leftTop = matrix.transformPosition(x, y);
       newState.rightTop = matrix.transformPosition(x + width, y);
       newState.leftBottom = matrix.transformPosition(x, y + height);
@@ -106,7 +109,9 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     const { x, y, width, height } = selection.boundingBox;
     console.log(
       '=> Origin Matrix',
-      selection.boundingBox.transformMatrix!.toTransform(),
+      Matrix.fromTransformText(
+        selection.boundingBox.mergedTransform!,
+      ).toTransform(),
       operatePosition,
     );
 
@@ -153,7 +158,13 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   };
 
   onMouseUp = () => {
+    const { selection } = this.props;
+    const { matrixStr } = this.state as any;
     this.setState({ startPoint: null });
+
+    if (selection.boundingBox) {
+      console.log('=> Up:', matrixStr);
+    }
   };
 
   render() {
@@ -164,7 +175,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       rightTop,
       leftBottom,
       rightBottom,
-      matrixStr,
     } = this.state;
     const {
       selection,
@@ -183,7 +193,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       transform: selection.boundingBox.mergedTransform,
     };
     delete boxProps.mergedTransform;
-    delete boxProps.transformMatrix;
 
     // Points
     const pointProps = {

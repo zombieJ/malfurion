@@ -9,11 +9,10 @@ export interface SVGBox {
 
 export interface BoundingBox extends SVGBox {
   mergedTransform?: string;
-  transformMatrix?: Matrix;
 }
 
 export type BoundingBoxOrigin = Required<
-  Omit<BoundingBox, 'width' | 'height' | 'transformMatrix'>
+  Omit<BoundingBox, 'width' | 'height'>
 >;
 
 export interface SVGNodeRecord {
