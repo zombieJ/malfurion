@@ -115,21 +115,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     const offsetY = e.clientY - startPoint.y;
 
     const { x, y, width, height } = selection.boundingBox;
-    console.log(
-      '=> Strings:',
-      selection.boundingBox.mergedTransform,
-      selection.boundingBox.pureMergedTransform,
-    );
-    console.log(
-      '=> Origin Matrix',
-      Matrix.fromTransformText(
-        selection.boundingBox.mergedTransform!,
-      ).toTransform(),
-      Matrix.fromTransformText(
-        selection.boundingBox.pureMergedTransform!,
-      ).toTransform(),
-      operatePosition,
-    );
 
     const positionList = [];
     const topLine = Line.fromPoints(leftTop, rightTop);
@@ -190,12 +175,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       } = selection.boundingBox;
       const source = Matrix.fromTransformText(pureMergedTransform!);
       const target = transformMatrix;
-      // console.warn(
-      //   '=> Up:\n',
-      //   source.toTransform(),
-      //   '\n',
-      //   target.toTransform(),
-      // );
 
       // Get mixed transform matrix
       // source * mixTransformMatrix = target
@@ -273,10 +252,12 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     // Box
     const boxProps = {
-      ...selection.boundingBox,
+      x: selection.boundingBox.x,
+      y: selection.boundingBox.y,
+      width: selection.boundingBox.width,
+      height: selection.boundingBox.height,
       transform: selection.boundingBox.mergedTransform,
     };
-    delete boxProps.mergedTransform;
 
     // Points
     const pointProps = {

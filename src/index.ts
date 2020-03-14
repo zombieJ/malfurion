@@ -382,7 +382,13 @@ class Malfurion {
     this.internalTransform(path, 'originY', DEFAULT_ORIGIN, value);
 
   rotate = (path: number[], value?: number | ((origin: number) => number)) =>
-    this.internalTransform(path, 'rotate', 0, value, val => val % 360);
+    this.internalTransform(
+      path,
+      'rotate',
+      0,
+      value,
+      val => ((val % 360) + 360) % 360,
+    );
 
   scaleX = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(path, 'scaleX', 1, value);
