@@ -1,4 +1,3 @@
-import { divide } from 'mathjs';
 import Matrix from '../src/utils/matrix';
 import { Line } from '../src/utils/mathUtil';
 
