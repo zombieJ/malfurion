@@ -1,5 +1,5 @@
 import { multiply, inv } from 'mathjs';
-import { Point } from '../interface';
+import { Point, ShapeInfo } from '../interface';
 import { parseTransformMatrix } from './svgUtil';
 import { resolveTernary } from './mathUtil';
 
@@ -69,20 +69,42 @@ export default class Matrix {
     return Matrix.fromTransform(a, b, c, d, e, f);
   }
 
-  public static fromMixTransform({
-    translateX,
-    translateY,
-    rotate,
-    scaleX,
-    scaleY,
-    originX,
-    originY,
+  public static fromRotate(
+    rotate: number,
+    { x, y, width, height, originX, originY }: Required<ShapeInfo>,
+  ) {
+    const deg = (rotate / 180) * Math.PI;
+    const transX = x + width * originX;
+    const transY = y + height * originY;
+    const transToMatrix = Matrix.fromTranslate(transX, transY);
+    const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
+    const rotateMatrix = Matrix.fromTransform(
+      Math.cos(deg),
+      Math.sin(deg),
+      -Math.sin(deg),
+      Math.cos(deg),
+      0,
+      0,
+    );
 
-    x,
-    y,
-    width,
-    height,
-  }: {
+    return transToMatrix.multiple(rotateMatrix).multiple(transBackMatrix);
+  }
+
+  public static fromScale(
+    scaleX: number,
+    scaleY: number,
+    { x, y, width, height, originX, originY }: Required<ShapeInfo>,
+  ) {
+    const transX = x + width * originX;
+    const transY = y + height * originY;
+    const transToMatrix = Matrix.fromTranslate(transX, transY);
+    const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
+    const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+    return transToMatrix.multiple(scaleMatrix).multiple(transBackMatrix);
+  }
+
+  public static fromMixTransform(mixTransform: {
     translateX: number;
     translateY: number;
     rotate: number;
@@ -95,6 +117,8 @@ export default class Matrix {
     width: number;
     height: number;
   }) {
+    const { translateX, translateY, rotate, scaleX, scaleY } = mixTransform;
+
     let mergeMatrix = Matrix.fromTranslate();
 
     // Translate
@@ -105,38 +129,16 @@ export default class Matrix {
 
     // Rotate matrix
     if (rotate !== 0) {
-      const deg = (rotate / 180) * Math.PI;
-      const transX = x + width * originX;
-      const transY = y + height * originY;
-      const transToMatrix = Matrix.fromTranslate(transX, transY);
-      const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
-      const rotateMatrix = Matrix.fromTransform(
-        Math.cos(deg),
-        Math.sin(deg),
-        -Math.sin(deg),
-        Math.cos(deg),
-        0,
-        0,
+      mergeMatrix = mergeMatrix.multiple(
+        Matrix.fromRotate(rotate, mixTransform),
       );
-
-      mergeMatrix = mergeMatrix
-        .multiple(transToMatrix)
-        .multiple(rotateMatrix)
-        .multiple(transBackMatrix);
     }
 
     // Scale matrix
     if (scaleX !== 1 || scaleY !== 1) {
-      const transX = x + width * originX;
-      const transY = y + height * originY;
-      const transToMatrix = Matrix.fromTranslate(transX, transY);
-      const transBackMatrix = Matrix.fromTranslate(-transX, -transY);
-      const scaleMatrix = Matrix.fromTransform(scaleX, 0, 0, scaleY, 0, 0);
-
-      mergeMatrix = mergeMatrix
-        .multiple(transToMatrix)
-        .multiple(scaleMatrix)
-        .multiple(transBackMatrix);
+      mergeMatrix = mergeMatrix.multiple(
+        Matrix.fromScale(scaleX, scaleY, mixTransform),
+      );
     }
 
     return mergeMatrix;

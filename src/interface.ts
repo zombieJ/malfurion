@@ -7,11 +7,14 @@ export interface SVGBox {
   height: number;
 }
 
-export interface BoundingBox extends SVGBox {
-  mergedTransform?: string;
-  pureMergedTransform?: string;
+export interface ShapeInfo extends SVGBox {
   originX?: number;
   originY?: number;
+}
+
+export interface BoundingBox extends ShapeInfo {
+  mergedTransform?: string;
+  pureMergedTransform?: string;
   rotate?: number;
 }
 
