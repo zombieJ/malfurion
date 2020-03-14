@@ -1,4 +1,4 @@
-import * as math from 'mathjs';
+import { divide } from 'mathjs';
 import Matrix from '../src/utils/matrix';
 import { Line } from '../src/utils/mathUtil';
 
@@ -39,11 +39,26 @@ describe('Utils', () => {
       const m2 = new Matrix(2, 3);
       m1.fill([1, 2, 3, 4, 5, 6]);
       m2.fill([1, 2, 3, 4, 5, 6]);
+      const result = m1.multiple(m2);
 
-      expect(m1.multiple(m2).getMatrix()).toEqual([
+      expect(result.getMatrix()).toEqual([
         [22, 28],
         [49, 64],
       ]);
+    });
+
+    it('leftDivide', () => {
+      const m1 = new Matrix(2, 2, [1, 2, 3, 4]);
+      const m2 = new Matrix(2, 2, [5, 6, 7, 8]);
+      const multiple = m1.multiple(m2);
+      expect(multiple.leftDivide(m1).getMatrix()).toEqual(m2.getMatrix());
+    });
+
+    it('rightDivide', () => {
+      const m1 = new Matrix(2, 2, [1, 2, 3, 4]);
+      const m2 = new Matrix(2, 2, [5, 6, 7, 8]);
+      const multiple = m1.multiple(m2);
+      expect(multiple.rightDivide(m2).getMatrix()).toEqual(m1.getMatrix());
     });
   });
 

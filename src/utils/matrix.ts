@@ -1,4 +1,4 @@
-import { multiply, inv } from 'mathjs';
+import { multiply, divide, inv } from 'mathjs';
 import { Point, ShapeInfo } from '../interface';
 import { parseTransformMatrix } from './svgUtil';
 import { resolveTernary } from './mathUtil';
@@ -200,12 +200,10 @@ export default class Matrix {
   };
 
   /**
-   * X * A = B, X = B/A
+   * X * A = B, X = B/A = A * inv(B)
    */
-  rightDivide = (instance: Matrix) => {
-    const inverseB = Matrix.fromArray(inv(this.getMatrix()));
-    return instance.multiple(inverseB);
-  };
+  rightDivide = (instance: Matrix) =>
+    Matrix.fromArray(divide(this.getMatrix(), instance.getMatrix()) as any);
 
   transformPosition = (x: number, y: number) => {
     const matrix = new Matrix(1, 3, [x, y, 1]);

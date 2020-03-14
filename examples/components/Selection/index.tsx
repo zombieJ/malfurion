@@ -223,19 +223,10 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const translateMatrix = translateRotateMatrix.rightDivide(rotateMatrix);
       const [, , , , translateX, translateY] = translateMatrix.toTransform();
 
-      const centerX = x + width * originX!;
-      const centerY = y + height * originY!;
-
-      const [[tx], [ty]] = mixTransformMatrix
-        .multiple(new Matrix(1, 3, [x, y, 1]))
-        .getMatrix();
-      const transCenterX = tx + width * a * originX!;
-      const transCenterY = ty + height * d * originY!;
-
       // Test usage, not use in real case
       const mixMatrix = Matrix.fromMixTransform({
-        translateX: transCenterX - centerX,
-        translateY: transCenterY - centerY,
+        translateX,
+        translateY,
         rotate: rotate!,
         scaleX,
         scaleY,
