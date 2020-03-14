@@ -30,6 +30,12 @@ interface SelectionState {
   leftBottom: Point;
   rightBottom: Point;
   operatePosition: Position | null;
+
+  /**
+   * Record user operation to render transform matrix.
+   * This is same as matrix from `rotate` `scale` and `translate`
+   * */
+  transformMatrix: Matrix;
 }
 
 class Selection extends React.Component<SelectionProps, SelectionState> {
@@ -43,6 +49,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     leftBottom: { x: 0, y: 0 },
     rightBottom: { x: 0, y: 0 },
     operatePosition: null,
+
+    transformMatrix: Matrix.fromTranslate(),
   };
 
   static getDerivedStateFromProps({ selection }: SelectionProps) {
@@ -94,7 +102,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       startPoint,
       leftTop,
       rightTop,
-      leftBottom,
+      // leftBottom,
       rightBottom,
       operatePosition,
     } = this.state;
@@ -125,8 +133,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     const positionList = [];
     const topLine = Line.fromPoints(leftTop, rightTop);
-    const bottomLine = Line.fromPoints(leftBottom, rightBottom);
-    const leftLine = Line.fromPoints(leftTop, leftBottom);
+    // const bottomLine = Line.fromPoints(leftBottom, rightBottom);
+    // const leftLine = Line.fromPoints(leftTop, leftBottom);
     const rightLine = Line.fromPoints(rightTop, rightBottom);
 
     switch (operatePosition) {
@@ -157,18 +165,16 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       // Do nothing
     }
 
-    const matrix = Matrix.backFromPosition(positionList);
-    // console.log('=> Trans Matrix', matrix.toTransform());
+    const transformMatrix = Matrix.backFromPosition(positionList);
 
     this.setState({
-      matrix,
-      matrixStr: matrix.toString(),
+      transformMatrix,
     });
   };
 
   onMouseUp = () => {
     const { selection } = this.props;
-    const { matrix, startPoint } = this.state as any;
+    const { transformMatrix, startPoint } = this.state;
     this.setState({ startPoint: null });
 
     if (selection.boundingBox && startPoint) {
@@ -183,7 +189,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         rotate,
       } = selection.boundingBox;
       const source = Matrix.fromTransformText(pureMergedTransform!);
-      const target = matrix as Matrix;
+      const target = transformMatrix;
       // console.warn(
       //   '=> Up:\n',
       //   source.toTransform(),
@@ -197,8 +203,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const centerX = x + width * originX!;
       const centerY = y + height * originY!;
       const cosA = Math.cos((rotate! / 180) * Math.PI);
-      const scaleX = a;
-      const scaleY = d;
+      const scaleX = a / cosA;
+      const scaleY = d / cosA;
 
       const [[tx], [ty]] = mixTransformMatrix
         .multiple(new Matrix(1, 3, [x, y, 1]))
@@ -296,7 +302,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           style={{ pointerEvents: 'none' }}
           vectorEffect="non-scaling-stroke"
           {...boxProps}
-          transform={this.state.matrixStr}
+          transform={this.state.transformMatrix.toString()}
         />
         {/* Center Cross */}
         <g
