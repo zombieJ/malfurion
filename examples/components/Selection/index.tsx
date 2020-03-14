@@ -150,6 +150,15 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       // Do nothing
     }
 
+    // console.error(
+    //   'Positions =>',
+    //   positionList,
+    //   topLine.toString(),
+    //   rightLine.toString(),
+    //   leftTop,
+    //   rightTop,
+    //   rightBottom,
+    // );
     const transformMatrix = Matrix.backFromPosition(positionList);
 
     this.setState({
@@ -188,11 +197,23 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         originY: originY!,
       };
 
+      console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
+
       // Get scaleX & scaleY
-      const [a, , , d] = mixTransformMatrix.toTransform();
-      const cosA = Math.cos((rotate! / 180) * Math.PI);
-      const scaleX = a / cosA;
-      const scaleY = d / cosA;
+      const [a, b, c, d] = mixTransformMatrix.toTransform();
+      let scaleX = 0;
+      let scaleY = 0;
+      if (rotate === 90) {
+        scaleX = b;
+        scaleY = -c;
+      } else if (rotate === 270) {
+        scaleX = -b;
+        scaleY = c;
+      } else {
+        const cosA = Math.cos((rotate! / 180) * Math.PI);
+        scaleX = a / cosA;
+        scaleY = d / cosA;
+      }
       const scaleMatrix = Matrix.fromScale(scaleX, scaleY, shapeInfo);
 
       // Get translate
@@ -218,7 +239,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         height,
       });
 
-      console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
       console.warn('=> MixMok:', mixMatrix.toTransform());
 
       selection.transformCurrentPath((instance, path) => {

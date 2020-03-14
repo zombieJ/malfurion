@@ -1,5 +1,8 @@
 import { Point } from '../interface';
 
+// Minimum 0.0000000000001, leave 1 digit.
+const PRECISION = 0.000000000001;
+
 /**
  *
  * @param list [x, y, z][]
@@ -41,12 +44,12 @@ export class Line {
    */
   static fromPoints = (p0: Point, p1: Point): Line => {
     // Vertical
-    if (p0.x === p1.x) {
+    if (Math.abs(p0.x - p1.x) <= PRECISION) {
       return new Line(null, null, p0.x, null);
     }
 
     // Horizontal
-    if (p0.y === p1.y) {
+    if (Math.abs(p0.y - p1.y) <= PRECISION) {
       return new Line(null, null, null, p0.y);
     }
 
@@ -114,4 +117,15 @@ export class Line {
   };
 
   toUnits = () => [this.a, this.b, this.x, this.y];
+
+  toString = () => {
+    if (this.isVertical()) {
+      return `x = ${this.x};`;
+    }
+    if (this.isHorizontal()) {
+      return `y = ${this.y};`;
+    }
+
+    return `y = ${this.a}x + ${this.b}`;
+  };
 }
