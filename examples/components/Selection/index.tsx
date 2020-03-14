@@ -193,22 +193,22 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
       const mixTransformMatrix = target.divide(source);
 
+      const [a, , , d] = mixTransformMatrix.toTransform();
       const centerX = x + width * originX!;
       const centerY = y + height * originY!;
 
       const [[tx], [ty]] = mixTransformMatrix
         .multiple(new Matrix(1, 3, [x, y, 1]))
         .getMatrix();
-      const transCenterX = tx + width * mixTransformMatrix.get(0, 0) * originX!;
-      const transCenterY =
-        ty + height * mixTransformMatrix.get(1, 1) * originY!;
+      const transCenterX = tx + width * a * originX!;
+      const transCenterY = ty + height * d * originY!;
 
       const mixMatrix = Matrix.fromMixTransform({
         translateX: transCenterX - centerX,
         translateY: transCenterY - centerY,
         rotate: rotate!,
-        scaleX: mixTransformMatrix.get(0, 0),
-        scaleY: mixTransformMatrix.get(1, 1),
+        scaleX: a,
+        scaleY: d,
         originX: originX!,
         originY: originY!,
 
@@ -231,8 +231,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       // console.warn('=> Tgt:', target.toTransform());
 
       selection.transformCurrentPath((instance, path) => {
-        instance.scaleX(path, mixTransformMatrix.get(0, 0));
-        instance.scaleY(path, mixTransformMatrix.get(1, 1));
+        instance.scaleX(path, a);
+        instance.scaleY(path, d);
         instance.translateX(path, transCenterX - centerX);
         instance.translateY(path, transCenterY - centerY);
       });
