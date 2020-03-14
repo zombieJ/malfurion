@@ -24,8 +24,6 @@ class Malfurion {
 
   private entity: SVGEntity;
 
-  private rect: SVGBox;
-
   private svg: SVGSVGElement | null = null;
 
   private debugHolder: SVGElement | null = null;
@@ -64,8 +62,7 @@ class Malfurion {
     document.body.appendChild(svg);
 
     // Calculate rect
-    this.rect = getBox(svg);
-    this.entity = analysisSVG(svg.children, this.rect);
+    this.entity = analysisSVG(svg.children, getBox(svg));
 
     // Clean up
     document.body.removeChild(svg);
@@ -116,7 +113,7 @@ class Malfurion {
 
     this.pathCache.getPathList().forEach(path => {
       const mergedTransform = this.getMergedTransform(path);
-      const box = this.getOriginBox(path, true);
+      const box = this.getOriginBox(path);
       const entity = this.getNodeEntity(path);
 
       if (box && entity) {
@@ -271,14 +268,10 @@ class Malfurion {
    * Return svg origin box related to the container.
    * When `pure` to `true`, return origin box related to context.
    */
-  getOriginBox = (path?: number[], pure: boolean = false): SVGBox | null => {
-    if (!path || !path.length) {
-      return this.rect;
-    }
-
+  getOriginBox = (path: number[]): SVGBox | null => {
     const entity = this.getNodeEntity(path);
     if (entity) {
-      return pure ? entity.box : entity.rect;
+      return entity.box;
     }
 
     return null;
@@ -297,7 +290,7 @@ class Malfurion {
         y: 0,
         width: 0,
         height: 0,
-        ...this.getOriginBox(path, true),
+        ...this.getOriginBox(path),
         originX: entity.originX || DEFAULT_ORIGIN,
         originY: entity.originY || DEFAULT_ORIGIN,
         mergedTransform,
@@ -316,7 +309,7 @@ class Malfurion {
       const { originX = DEFAULT_ORIGIN, originY = DEFAULT_ORIGIN } = entity;
       const mergedTransform = this.getMergedTransform(path);
 
-      const box = this.getOriginBox(path, true)!;
+      const box = this.getOriginBox(path)!;
 
       return {
         x: box.x + box.width * originX,
@@ -413,7 +406,7 @@ class Malfurion {
       return Matrix.fromTranslate();
     }
 
-    const { x, y, width, height } = this.getOriginBox(path, true)!;
+    const { x, y, width, height } = this.getOriginBox(path)!;
     const {
       rotate = 0,
       scaleX = 1,

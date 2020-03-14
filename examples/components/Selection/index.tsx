@@ -201,24 +201,24 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const transCenterY =
         ty + height * mixTransformMatrix.get(1, 1) * originX!;
 
-      // const mixMatrix = Matrix.fromMixTransform({
-      //   translateX: transCenterX - centerX,
-      //   translateY: transCenterY - centerY,
-      //   rotate: 0,
-      //   scaleX: mixTransformMatrix.get(0, 0),
-      //   scaleY: mixTransformMatrix.get(1, 1),
-      //   originX: originX!,
-      //   originY: originY!,
+      const mixMatrix = Matrix.fromMixTransform({
+        translateX: transCenterX - centerX,
+        translateY: transCenterY - centerY,
+        rotate: 0,
+        scaleX: mixTransformMatrix.get(0, 0),
+        scaleY: mixTransformMatrix.get(1, 1),
+        originX: originX!,
+        originY: originY!,
 
-      //   x,
-      //   y,
-      //   width,
-      //   height,
-      // });
+        x,
+        y,
+        width,
+        height,
+      });
 
       // console.warn('=> Data', x, y, width, height);
-      // console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
-      // console.warn('=> MixMok:', mixMatrix.toTransform());
+      console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
+      console.warn('=> MixMok:', mixMatrix.toTransform());
 
       // console.warn('=> Src:', mixTransformMatrix.toTransform());
       // console.warn(

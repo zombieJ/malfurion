@@ -12,12 +12,18 @@ export interface BoundingBox extends SVGBox {
   pureMergedTransform?: string;
   originX?: number;
   originY?: number;
+  rotate?: number;
 }
 
 export type BoundingBoxOrigin = Required<
   Omit<
     BoundingBox,
-    'width' | 'height' | 'pureMergedTransform' | 'originX' | 'originY'
+    | 'width'
+    | 'height'
+    | 'pureMergedTransform'
+    | 'originX'
+    | 'originY'
+    | 'rotate'
   >
 >;
 
