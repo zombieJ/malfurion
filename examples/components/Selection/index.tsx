@@ -180,6 +180,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         height,
         originX,
         originY,
+        rotate,
       } = selection.boundingBox;
       const source = Matrix.fromTransformText(pureMergedTransform!);
       const target = matrix as Matrix;
@@ -194,17 +195,18 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
       const centerX = x + width * originX!;
       const centerY = y + height * originY!;
+
       const [[tx], [ty]] = mixTransformMatrix
         .multiple(new Matrix(1, 3, [x, y, 1]))
         .getMatrix();
       const transCenterX = tx + width * mixTransformMatrix.get(0, 0) * originX!;
       const transCenterY =
-        ty + height * mixTransformMatrix.get(1, 1) * originX!;
+        ty + height * mixTransformMatrix.get(1, 1) * originY!;
 
       const mixMatrix = Matrix.fromMixTransform({
         translateX: transCenterX - centerX,
         translateY: transCenterY - centerY,
-        rotate: 0,
+        rotate: rotate!,
         scaleX: mixTransformMatrix.get(0, 0),
         scaleY: mixTransformMatrix.get(1, 1),
         originX: originX!,
@@ -216,7 +218,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         height,
       });
 
-      // console.warn('=> Data', x, y, width, height);
+      console.warn('=> Center', centerX, centerY, transCenterX, transCenterY);
+      console.warn('=> Data', x, y, width, height, rotate);
       console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
       console.warn('=> MixMok:', mixMatrix.toTransform());
 

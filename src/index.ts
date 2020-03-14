@@ -293,6 +293,7 @@ class Malfurion {
         ...this.getOriginBox(path),
         originX: entity.originX || DEFAULT_ORIGIN,
         originY: entity.originY || DEFAULT_ORIGIN,
+        rotate: entity.rotate || 0,
         mergedTransform,
         pureMergedTransform,
       };
