@@ -196,6 +196,9 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const [a, , , d] = mixTransformMatrix.toTransform();
       const centerX = x + width * originX!;
       const centerY = y + height * originY!;
+      const cosA = Math.cos((rotate! / 180) * Math.PI);
+      const scaleX = a;
+      const scaleY = d;
 
       const [[tx], [ty]] = mixTransformMatrix
         .multiple(new Matrix(1, 3, [x, y, 1]))
@@ -207,8 +210,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         translateX: transCenterX - centerX,
         translateY: transCenterY - centerY,
         rotate: rotate!,
-        scaleX: a,
-        scaleY: d,
+        scaleX,
+        scaleY,
         originX: originX!,
         originY: originY!,
 
@@ -231,8 +234,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       // console.warn('=> Tgt:', target.toTransform());
 
       selection.transformCurrentPath((instance, path) => {
-        instance.scaleX(path, a);
-        instance.scaleY(path, d);
+        instance.scaleX(path, scaleX);
+        instance.scaleY(path, scaleY);
         instance.translateX(path, transCenterX - centerX);
         instance.translateY(path, transCenterY - centerY);
       });
