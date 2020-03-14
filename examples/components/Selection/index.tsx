@@ -197,14 +197,34 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       //   target.toTransform(),
       // );
 
-      const mixTransformMatrix = target.divide(source);
+      // Get mixed transform matrix
+      // source * mixTransformMatrix = target
+      const mixTransformMatrix = target.leftDivide(source);
+      const shapeInfo = {
+        x,
+        y,
+        width,
+        height,
+        originX: originX!,
+        originY: originY!,
+      };
 
+      // Get scaleX & scaleY
       const [a, , , d] = mixTransformMatrix.toTransform();
-      const centerX = x + width * originX!;
-      const centerY = y + height * originY!;
       const cosA = Math.cos((rotate! / 180) * Math.PI);
       const scaleX = a / cosA;
       const scaleY = d / cosA;
+      const scaleMatrix = Matrix.fromScale(scaleX, scaleY, shapeInfo);
+
+      // Get translate
+      // Translate * Rotate * Scale
+      const rotateMatrix = Matrix.fromRotate(rotate!, shapeInfo);
+      const translateRotateMatrix = mixTransformMatrix.rightDivide(scaleMatrix);
+      const translateMatrix = translateRotateMatrix.rightDivide(rotateMatrix);
+      const [, , , , translateX, translateY] = translateMatrix.toTransform();
+
+      const centerX = x + width * originX!;
+      const centerY = y + height * originY!;
 
       const [[tx], [ty]] = mixTransformMatrix
         .multiple(new Matrix(1, 3, [x, y, 1]))
@@ -212,6 +232,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const transCenterX = tx + width * a * originX!;
       const transCenterY = ty + height * d * originY!;
 
+      // Test usage, not use in real case
       const mixMatrix = Matrix.fromMixTransform({
         translateX: transCenterX - centerX,
         translateY: transCenterY - centerY,
@@ -227,23 +248,14 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         height,
       });
 
-      console.warn('=> Center', centerX, centerY, transCenterX, transCenterY);
-      console.warn('=> Data', x, y, width, height, rotate);
       console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
       console.warn('=> MixMok:', mixMatrix.toTransform());
-
-      // console.warn('=> Src:', mixTransformMatrix.toTransform());
-      // console.warn(
-      //   '=> Cal:',
-      //   source.multiple(mixTransformMatrix).toTransform(),
-      // );
-      // console.warn('=> Tgt:', target.toTransform());
 
       selection.transformCurrentPath((instance, path) => {
         instance.scaleX(path, scaleX);
         instance.scaleY(path, scaleY);
-        instance.translateX(path, transCenterX - centerX);
-        instance.translateY(path, transCenterY - centerY);
+        instance.translateX(path, translateX);
+        instance.translateY(path, translateY);
       });
     }
   };

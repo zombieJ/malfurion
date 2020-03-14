@@ -191,9 +191,20 @@ export default class Matrix {
     return Matrix.fromArray(rets);
   };
 
-  divide = (instance: Matrix) => {
-    const inverse = Matrix.fromArray(inv(instance.getMatrix()));
-    return inverse.multiple(this);
+  /**
+   * A * X = B, X = B\A
+   */
+  leftDivide = (instance: Matrix) => {
+    const inverseA = Matrix.fromArray(inv(instance.getMatrix()));
+    return inverseA.multiple(this);
+  };
+
+  /**
+   * X * A = B, X = B/A
+   */
+  rightDivide = (instance: Matrix) => {
+    const inverseB = Matrix.fromArray(inv(this.getMatrix()));
+    return instance.multiple(inverseB);
   };
 
   transformPosition = (x: number, y: number) => {
