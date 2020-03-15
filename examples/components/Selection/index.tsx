@@ -167,6 +167,14 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     this.setState({
       transformMatrix,
     });
+
+    this.updateTransform();
+    this.setState({
+      startPoint: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+    });
   };
 
   onMouseUp = () => {
@@ -204,7 +212,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
         originY: originY!,
       };
 
-      console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
+      // console.warn('=> MixSrc:', mixTransformMatrix.toTransform());
 
       // Get scaleX & scaleY
       const [a, b, c, d] = mixTransformMatrix.toTransform();
@@ -231,22 +239,22 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       const [, , , , translateX, translateY] = translateMatrix.toTransform();
 
       // Test usage, not use in real case
-      const mixMatrix = Matrix.fromMixTransform({
-        translateX,
-        translateY,
-        rotate: rotate!,
-        scaleX,
-        scaleY,
-        originX: originX!,
-        originY: originY!,
+      // const mixMatrix = Matrix.fromMixTransform({
+      //   translateX,
+      //   translateY,
+      //   rotate: rotate!,
+      //   scaleX,
+      //   scaleY,
+      //   originX: originX!,
+      //   originY: originY!,
 
-        x,
-        y,
-        width,
-        height,
-      });
+      //   x,
+      //   y,
+      //   width,
+      //   height,
+      // });
 
-      console.warn('=> MixMok:', mixMatrix.toTransform());
+      // console.warn('=> MixMok:', mixMatrix.toTransform());
 
       selection.transformCurrentPath((instance, path) => {
         instance.scaleX(path, scaleX);
