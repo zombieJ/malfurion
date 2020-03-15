@@ -1,4 +1,5 @@
 import React from 'react';
+import { throttle } from 'lodash';
 import { Matrix, Line } from '../../../src';
 import useElementSelection from '../../hooks/useElementSelection';
 import OperatePoint, { Position } from './OperatePoint';
@@ -89,6 +90,12 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     }
 
     return newState;
+  }
+
+  constructor(props: SelectionProps) {
+    super(props);
+
+    this.onMouseMove = throttle(this.onMouseMove, 100);
   }
 
   componentDidMount() {
