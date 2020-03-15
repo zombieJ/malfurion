@@ -7,15 +7,17 @@ export interface RotateHandlerProps {
   size: number;
   stroke: string;
   rotate: number;
+  onMouseDown: React.MouseEventHandler<SVGElement>;
 }
 
-export default function RotateHandler({
-  origin,
-  length,
-  stroke,
-  size,
-  rotate,
-}: RotateHandlerProps) {
+function RotateHandler(
+  { origin, length, stroke, size, rotate, onMouseDown }: RotateHandlerProps,
+  ref: React.RefObject<SVGRectElement | null>,
+) {
+  const centerRef = React.useRef<SVGRectElement>(null);
+
+  React.useImperativeHandle(ref, () => centerRef.current);
+
   return (
     <g transform={`rotate(${rotate} ${origin.x} ${origin.y})`}>
       <line
@@ -24,6 +26,7 @@ export default function RotateHandler({
         x2={origin.x}
         y2={origin.y - length}
         stroke={stroke}
+        style={{ pointerEvents: 'none' }}
       />
       <circle
         cx={origin.x}
@@ -32,7 +35,18 @@ export default function RotateHandler({
         fill="transparent"
         stroke={stroke}
         style={{ cursor: 'pointer' }}
+        onMouseDown={onMouseDown}
+      />
+      <rect
+        x={origin.x}
+        y={origin.y}
+        width={1}
+        height={1}
+        fill="red"
+        ref={centerRef}
       />
     </g>
   );
 }
+
+export default React.forwardRef(RotateHandler);

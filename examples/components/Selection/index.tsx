@@ -60,6 +60,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     control: null,
   };
 
+  rotateRef = React.createRef<SVGRectElement>();
+
   static getDerivedStateFromProps({ selection }: SelectionProps) {
     const newState: Partial<SelectionState> = {};
 
@@ -99,7 +101,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     document.removeEventListener('mouseup', this.onMouseUp);
   }
 
-  onMouseDown = (
+  onPointMouseDown = (
     { clientX, clientY }: React.MouseEvent<SVGElement>,
     position: Position,
   ) => {
@@ -109,7 +111,17 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     });
   };
 
-  onMouseMove = (e: MouseEvent) => {
+  onRotateMouseDown: React.MouseEventHandler<SVGElement> = () => {
+    if (this.rotateRef.current) {
+      const { x, y } = this.rotateRef.current.getBoundingClientRect();
+      this.setState({
+        control: 'rotate',
+        startPoint: { x, y },
+      });
+    }
+  };
+
+  onMouseMove = ({ clientX, clientY }: MouseEvent) => {
     const {
       startPoint,
       leftTop,
@@ -123,68 +135,80 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       return;
     }
 
-    const offsetX = e.clientX - startPoint.x;
-    const offsetY = e.clientY - startPoint.y;
+    const offsetX = clientX - startPoint.x;
+    const offsetY = clientY - startPoint.y;
 
     const { x, y, width, height } = selection.boundingBox;
 
-    const positionList = [];
-    const topLine = Line.fromPoints(leftTop, rightTop);
-    // const bottomLine = Line.fromPoints(leftBottom, rightBottom);
-    // const leftLine = Line.fromPoints(leftTop, leftBottom);
-    const rightLine = Line.fromPoints(rightTop, rightBottom);
-
-    switch (control) {
-      case 'rb': {
-        // LT
-        positionList.push({
-          source: { x, y },
-          target: leftTop,
-        });
-
-        // RT
-        const newRightLine = rightLine.translate(offsetX, offsetY);
-        const crossPoint = topLine.crossPoint(newRightLine);
-        positionList.push({
-          source: { x: x + width, y },
-          target: { x: crossPoint.x, y: crossPoint.y },
-        });
-
-        // RB
-        positionList.push({
-          source: { x: x + width, y: y + height },
-          target: { x: rightBottom.x + offsetX, y: rightBottom.y + offsetY },
-        });
-        break;
+    if (control === 'rotate') {
+      const w = clientX - startPoint.x;
+      const h = startPoint.y - clientY;
+      let newRotate: number = 0;
+      if (clientX === startPoint.x) {
+        newRotate = clientY < startPoint.y ? 0 : 180;
+      } else {
+        newRotate = (Math.atan(w / h) / Math.PI) * 180;
+        newRotate = (newRotate + 180) % 180;
+        newRotate = clientX > startPoint.x ? newRotate : newRotate + 180;
       }
 
-      default:
-      // Do nothing
+      selection.transformCurrentPath((instance, path) => {
+        instance.rotate(path, newRotate);
+      });
+    } else {
+      const positionList = [];
+      const topLine = Line.fromPoints(leftTop, rightTop);
+      // const bottomLine = Line.fromPoints(leftBottom, rightBottom);
+      // const leftLine = Line.fromPoints(leftTop, leftBottom);
+      const rightLine = Line.fromPoints(rightTop, rightBottom);
+
+      switch (control) {
+        case 'rb': {
+          // LT
+          positionList.push({
+            source: { x, y },
+            target: leftTop,
+          });
+
+          // RT
+          const newRightLine = rightLine.translate(offsetX, offsetY);
+          const crossPoint = topLine.crossPoint(newRightLine);
+          positionList.push({
+            source: { x: x + width, y },
+            target: { x: crossPoint.x, y: crossPoint.y },
+          });
+
+          // RB
+          positionList.push({
+            source: { x: x + width, y: y + height },
+            target: { x: rightBottom.x + offsetX, y: rightBottom.y + offsetY },
+          });
+          break;
+        }
+
+        default:
+        // Do nothing
+      }
+
+      const transformMatrix = Matrix.backFromPosition(positionList);
+      this.updateTransform(transformMatrix);
+
+      this.setState({
+        startPoint: {
+          x: clientX,
+          y: clientY,
+        },
+      });
     }
-
-    const transformMatrix = Matrix.backFromPosition(positionList);
-
-    this.setState({
-      transformMatrix,
-    });
-
-    this.updateTransform();
-    this.setState({
-      startPoint: {
-        x: e.clientX,
-        y: e.clientY,
-      },
-    });
   };
 
   onMouseUp = () => {
-    this.updateTransform();
-    this.setState({ startPoint: null });
+    this.setState({ startPoint: null, control: null });
   };
 
-  updateTransform = () => {
+  updateTransform = (transformMatrix: Matrix) => {
     const { selection } = this.props;
-    const { transformMatrix, startPoint } = this.state;
+    const { startPoint } = this.state;
 
     if (selection.boundingBox && startPoint) {
       const {
@@ -272,7 +296,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       rightTop,
       leftBottom,
       rightBottom,
-      transformMatrix,
+      // transformMatrix,
     } = this.state;
     const {
       selection,
@@ -300,7 +324,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       size: pointSize,
       stroke,
       fill: 'transparent',
-      onMouseDown: this.onMouseDown,
+      onMouseDown: this.onPointMouseDown,
     };
 
     return (
@@ -315,7 +339,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           {...boxProps}
         />
 
-        <rect
+        {/* <rect
           stroke="red"
           strokeWidth={1}
           fill="transparent"
@@ -323,7 +347,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           vectorEffect="non-scaling-stroke"
           {...boxProps}
           transform={transformMatrix.toString()}
-        />
+        /> */}
         {/* Origin Point */}
         <OriginPoint size={originSize} point={origin} stroke={stroke} />
 
@@ -334,6 +358,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           length={handlerSize}
           stroke={stroke}
           rotate={selection.boundingBox.rotate || 0}
+          onMouseDown={this.onRotateMouseDown}
+          ref={this.rotateRef}
         />
 
         {/* Points */}
