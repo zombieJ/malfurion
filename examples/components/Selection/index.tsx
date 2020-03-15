@@ -34,14 +34,14 @@ interface SelectionState {
   leftBottom: Point;
   rightBottom: Point;
 
-  // Click on the position
-  operatePosition: Position | null;
-
   /**
    * Record user operation to render transform matrix.
    * This is same as matrix from `rotate` `scale` and `translate`
    * */
   transformMatrix: Matrix;
+
+  /** Control point */
+  control: null | 'lt' | 'rt' | 'lb' | 'rb' | 'rotate';
 }
 
 class Selection extends React.Component<SelectionProps, SelectionState> {
@@ -55,9 +55,9 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
 
     origin: { x: 0, y: 0 },
 
-    operatePosition: null,
-
     transformMatrix: Matrix.fromTranslate(),
+
+    control: null,
   };
 
   static getDerivedStateFromProps({ selection }: SelectionProps) {
@@ -104,8 +104,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     position: Position,
   ) => {
     this.setState({
+      control: position,
       startPoint: { x: clientX, y: clientY },
-      operatePosition: position,
     });
   };
 
@@ -116,7 +116,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       rightTop,
       // leftBottom,
       rightBottom,
-      operatePosition,
+      control,
     } = this.state;
     const { selection } = this.props;
     if (!startPoint || !selection.boundingBox) {
@@ -134,7 +134,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     // const leftLine = Line.fromPoints(leftTop, leftBottom);
     const rightLine = Line.fromPoints(rightTop, rightBottom);
 
-    switch (operatePosition) {
+    switch (control) {
       case 'rb': {
         // LT
         positionList.push({
