@@ -31,6 +31,7 @@ export default function RotateHandler({
         r={size / 2}
         fill="transparent"
         stroke={stroke}
+        style={{ cursor: 'pointer' }}
       />
     </g>
   );

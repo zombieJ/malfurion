@@ -162,15 +162,6 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
       // Do nothing
     }
 
-    // console.error(
-    //   'Positions =>',
-    //   positionList,
-    //   topLine.toString(),
-    //   rightLine.toString(),
-    //   leftTop,
-    //   rightTop,
-    //   rightBottom,
-    // );
     const transformMatrix = Matrix.backFromPosition(positionList);
 
     this.setState({
@@ -179,9 +170,13 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   };
 
   onMouseUp = () => {
+    this.updateTransform();
+    this.setState({ startPoint: null });
+  };
+
+  updateTransform = () => {
     const { selection } = this.props;
     const { transformMatrix, startPoint } = this.state;
-    this.setState({ startPoint: null });
 
     if (selection.boundingBox && startPoint) {
       const {
@@ -263,7 +258,14 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   };
 
   render() {
-    const { origin, leftTop, rightTop, leftBottom, rightBottom } = this.state;
+    const {
+      origin,
+      leftTop,
+      rightTop,
+      leftBottom,
+      rightBottom,
+      transformMatrix,
+    } = this.state;
     const {
       selection,
       originSize = 10,
@@ -312,7 +314,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           style={{ pointerEvents: 'none' }}
           vectorEffect="non-scaling-stroke"
           {...boxProps}
-          transform={this.state.transformMatrix.toString()}
+          transform={transformMatrix.toString()}
         />
         {/* Origin Point */}
         <OriginPoint size={originSize} point={origin} stroke={stroke} />
