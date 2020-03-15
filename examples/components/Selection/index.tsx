@@ -3,11 +3,13 @@ import { Matrix, Line } from '../../../src';
 import useElementSelection from '../../hooks/useElementSelection';
 import OperatePoint, { Position } from './OperatePoint';
 import { OriginPoint } from './OriginPoint';
+import RotateHandler from './RotateHandler';
 
 export interface SelectionProps {
   selection: ReturnType<typeof useElementSelection>;
   originSize?: number;
   pointSize?: number;
+  handlerSize?: number;
   stroke?: string;
   onTransform?: (matrix: Matrix) => {};
 }
@@ -265,7 +267,8 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     const {
       selection,
       originSize = 10,
-      pointSize = 5,
+      pointSize = 6,
+      handlerSize = 100,
       stroke = '#000',
     } = this.props;
 
@@ -311,8 +314,17 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           {...boxProps}
           transform={this.state.transformMatrix.toString()}
         />
-        {/* Center Cross */}
+        {/* Origin Point */}
         <OriginPoint size={originSize} point={origin} stroke={stroke} />
+
+        {/* Rotate Handler */}
+        <RotateHandler
+          origin={origin}
+          size={pointSize}
+          length={handlerSize}
+          stroke={stroke}
+          rotate={selection.boundingBox.rotate || 0}
+        />
 
         {/* Points */}
         <OperatePoint {...pointProps} position="lt" point={leftTop} />
