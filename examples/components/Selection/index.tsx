@@ -2,10 +2,11 @@ import React from 'react';
 import { Matrix, Line } from '../../../src';
 import useElementSelection from '../../hooks/useElementSelection';
 import OperatePoint, { Position } from './OperatePoint';
+import { OriginPoint } from './OriginPoint';
 
 export interface SelectionProps {
   selection: ReturnType<typeof useElementSelection>;
-  crossSize?: number;
+  originSize?: number;
   pointSize?: number;
   stroke?: string;
   onTransform?: (matrix: Matrix) => {};
@@ -21,14 +22,17 @@ interface SelectionState {
     x: number;
     y: number;
   } | null;
-  offsetX: number;
-  offsetY: number;
+
+  // Origin
+  origin: Point;
 
   // Operate position
   leftTop: Point;
   rightTop: Point;
   leftBottom: Point;
   rightBottom: Point;
+
+  // Click on the position
   operatePosition: Position | null;
 
   /**
@@ -41,13 +45,14 @@ interface SelectionState {
 class Selection extends React.Component<SelectionProps, SelectionState> {
   state: SelectionState = {
     startPoint: null,
-    offsetX: 1,
-    offsetY: 1,
 
     leftTop: { x: 0, y: 0 },
     rightTop: { x: 0, y: 0 },
     leftBottom: { x: 0, y: 0 },
     rightBottom: { x: 0, y: 0 },
+
+    origin: { x: 0, y: 0 },
+
     operatePosition: null,
 
     transformMatrix: Matrix.fromTranslate(),
@@ -57,21 +62,26 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
     const newState: Partial<SelectionState> = {};
 
     if (selection.boundingBox) {
+      const { x, y, width, height, originX, originY } = selection.boundingBox;
+
       const transformMatrix = Matrix.fromTransformText(
         selection.boundingBox.mergedTransform!,
       );
-      const [a, b, c, d] = transformMatrix.toTransform();
 
-      newState.offsetX = (a * a + b * b) ** 0.5;
-      newState.offsetY = (c * c + d * d) ** 0.5;
+      // Origin
+      newState.origin = transformMatrix.transformPosition(
+        x + width * originX!,
+        y + height * originY!,
+      );
 
       // Points
-      const { x, y, width, height } = selection.boundingBox!;
-      const matrix = transformMatrix;
-      newState.leftTop = matrix.transformPosition(x, y);
-      newState.rightTop = matrix.transformPosition(x + width, y);
-      newState.leftBottom = matrix.transformPosition(x, y + height);
-      newState.rightBottom = matrix.transformPosition(x + width, y + height);
+      newState.leftTop = transformMatrix.transformPosition(x, y);
+      newState.rightTop = transformMatrix.transformPosition(x + width, y);
+      newState.leftBottom = transformMatrix.transformPosition(x, y + height);
+      newState.rightBottom = transformMatrix.transformPosition(
+        x + width,
+        y + height,
+      );
     }
 
     return newState;
@@ -251,22 +261,15 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
   };
 
   render() {
-    const {
-      offsetX,
-      offsetY,
-      leftTop,
-      rightTop,
-      leftBottom,
-      rightBottom,
-    } = this.state;
+    const { origin, leftTop, rightTop, leftBottom, rightBottom } = this.state;
     const {
       selection,
-      crossSize = 5,
+      originSize = 10,
       pointSize = 5,
       stroke = '#000',
     } = this.props;
 
-    if (!selection.boundingBox || !selection.boundingBoxOrigin) {
+    if (!selection.boundingBox) {
       return null;
     }
 
@@ -309,29 +312,7 @@ class Selection extends React.Component<SelectionProps, SelectionState> {
           transform={this.state.transformMatrix.toString()}
         />
         {/* Center Cross */}
-        <g
-          transform={selection.boundingBoxOrigin.mergedTransform}
-          style={{ pointerEvents: 'none' }}
-        >
-          <line
-            x1={selection.boundingBoxOrigin.x}
-            x2={selection.boundingBoxOrigin.x}
-            y1={selection.boundingBoxOrigin.y - crossSize / offsetY}
-            y2={selection.boundingBoxOrigin.y + crossSize / offsetY}
-            stroke={stroke}
-            strokeWidth={1}
-            vectorEffect="non-scaling-stroke"
-          />
-          <line
-            x1={selection.boundingBoxOrigin.x - crossSize / offsetX}
-            x2={selection.boundingBoxOrigin.x + crossSize / offsetX}
-            y1={selection.boundingBoxOrigin.y}
-            y2={selection.boundingBoxOrigin.y}
-            stroke={stroke}
-            strokeWidth={1}
-            vectorEffect="non-scaling-stroke"
-          />
-        </g>
+        <OriginPoint size={originSize} point={origin} stroke={stroke} />
 
         {/* Points */}
         <OperatePoint {...pointProps} position="lt" point={leftTop} />

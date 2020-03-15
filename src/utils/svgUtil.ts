@@ -54,25 +54,13 @@ export function getBox(ele: SVGGraphicsElement, pure: boolean = false) {
   const { a, b, c, d, e, f } = ele.getCTM()!;
   const matrix: Matrix = Matrix.fromTransform(a, b, c, d, e, f);
 
-  const leftTop = matrix.multiple(new Matrix(1, 3, [x, y, 1]));
-  const rightTop = matrix.multiple(new Matrix(1, 3, [x + width, y, 1]));
-  const leftBottom = matrix.multiple(new Matrix(1, 3, [x, y + height, 1]));
-  const rightBottom = matrix.multiple(
-    new Matrix(1, 3, [x + width, y + height, 1]),
-  );
+  const leftTop = matrix.transformPosition(x, y);
+  const rightTop = matrix.transformPosition(x + width, y);
+  const leftBottom = matrix.transformPosition(x, y + height);
+  const rightBottom = matrix.transformPosition(x + width, y + height);
 
-  const xs = [
-    leftTop.get(0, 0),
-    rightTop.get(0, 0),
-    leftBottom.get(0, 0),
-    rightBottom.get(0, 0),
-  ];
-  const ys = [
-    leftTop.get(0, 1),
-    rightTop.get(0, 1),
-    leftBottom.get(0, 1),
-    rightBottom.get(0, 1),
-  ];
+  const xs = [leftTop.x, rightTop.x, leftBottom.x, rightBottom.x];
+  const ys = [leftTop.y, rightTop.y, leftBottom.y, rightBottom.y];
 
   const left = Math.min(...xs);
   const right = Math.max(...xs);
@@ -129,7 +117,6 @@ export function analysisNodes(
           const nodeEntity: SVGNodeEntity = {
             ...getNodeRecord(node, false, postRecord),
             parent,
-            rect: getBox(node),
             box: getBox(node, true),
             children: [],
           };
@@ -157,10 +144,9 @@ export function analysisSVG(list: any, rootRect: SVGBox): SVGEntity {
   let rootNodes = analysisNodes(null, elements, entity);
 
   if (rootNodes.length > 1) {
-    const rootNode = {
+    const rootNode: SVGNodeEntity = {
       parent: null,
       tagName: 'g',
-      rect: rootRect,
       box: rootRect,
       attributes: {},
       children: rootNodes,

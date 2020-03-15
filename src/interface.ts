@@ -18,18 +18,6 @@ export interface BoundingBox extends ShapeInfo {
   rotate?: number;
 }
 
-export type BoundingBoxOrigin = Required<
-  Omit<
-    BoundingBox,
-    | 'width'
-    | 'height'
-    | 'pureMergedTransform'
-    | 'originX'
-    | 'originY'
-    | 'rotate'
-  >
->;
-
 export interface SVGNodeRecord {
   tagName: string;
   attributes: Record<string, string>;
@@ -39,7 +27,6 @@ export interface SVGNodeRecord {
 export interface SVGNodeEntity extends SVGNodeRecord {
   parent: SVGNodeEntity | null;
   children: SVGNodeEntity[];
-  rect: SVGBox;
   box: SVGBox;
   rotate?: number;
   originX?: number;

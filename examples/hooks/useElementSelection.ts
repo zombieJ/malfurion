@@ -1,5 +1,5 @@
 import React from 'react';
-import Malfurion, { BoundingBox, BoundingBoxOrigin } from '../../src';
+import Malfurion, { BoundingBox } from '../../src';
 
 interface ProxyRef {
   current: Malfurion | null;
@@ -12,10 +12,6 @@ export default function useElementSelection(
   const [boundingBox, setBoundingBox] = React.useState<BoundingBox | null>(
     null,
   );
-  const [
-    boundingBoxOrigin,
-    setBoundingBoxOrigin,
-  ] = React.useState<BoundingBoxOrigin | null>(null);
   const [current, setCurrent] = React.useState<Malfurion | null>(null);
   const [currentPath, setCurrentPath] = React.useState<number[]>([]);
   const proxyRef = React.useRef({ current, currentPath });
@@ -28,7 +24,6 @@ export default function useElementSelection(
   React.useEffect(() => {
     if (current) {
       setBoundingBox(current.getBox(currentPath)!);
-      setBoundingBoxOrigin(current.getBoxOrigin(currentPath)!);
     }
   }, [current, currentPath]);
 
@@ -64,13 +59,11 @@ export default function useElementSelection(
     if (current && currentPath) {
       callback(current, currentPath);
       setBoundingBox(current.getBox(currentPath)!);
-      setBoundingBoxOrigin(current.getBoxOrigin(currentPath)!);
     }
   }
 
   return {
     boundingBox,
-    boundingBoxOrigin,
     updateSelection,
     proxyRef,
     transformCurrentPath,

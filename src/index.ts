@@ -7,13 +7,12 @@ import {
   MalfurionEventHandler,
   MalfurionEventType,
   BoundingBox,
-  BoundingBoxOrigin,
 } from './interface';
 import Matrix from './utils/matrix';
 import { Line } from './utils/mathUtil';
 import { PathCache } from './utils/cacheUtil';
 
-export { BoundingBox, BoundingBoxOrigin, Matrix, Line };
+export { BoundingBox, Matrix, Line };
 
 export const MALFURION_INSTANCE = '__Malfurion_Instance__';
 
@@ -296,26 +295,6 @@ class Malfurion {
         rotate: entity.rotate || 0,
         mergedTransform,
         pureMergedTransform,
-      };
-    }
-
-    return null;
-  };
-
-  getBoxOrigin = (path: number[]): BoundingBoxOrigin | null => {
-    const element = this.getElement(path);
-    const entity = this.getNodeEntity(path);
-
-    if (element && entity) {
-      const { originX = DEFAULT_ORIGIN, originY = DEFAULT_ORIGIN } = entity;
-      const mergedTransform = this.getMergedTransform(path);
-
-      const box = this.getOriginBox(path)!;
-
-      return {
-        x: box.x + box.width * originX,
-        y: box.y + box.height * originY,
-        mergedTransform,
       };
     }
 
