@@ -24,10 +24,7 @@ export interface SVGNodeRecord {
   children: SVGNodeRecord[];
 }
 
-export interface SVGNodeEntity extends SVGNodeRecord {
-  parent: SVGNodeEntity | null;
-  children: SVGNodeEntity[];
-  box: SVGBox;
+export interface TransformConfig {
   rotate?: number;
   originX?: number;
   originY?: number;
@@ -36,6 +33,12 @@ export interface SVGNodeEntity extends SVGNodeRecord {
   translateX?: number;
   translateY?: number;
   opacity?: number;
+}
+
+export interface SVGNodeEntity extends SVGNodeRecord, TransformConfig {
+  parent: SVGNodeEntity | null;
+  children: SVGNodeEntity[];
+  box: SVGBox;
 }
 
 export interface SVGEntity {
@@ -61,4 +64,8 @@ export type MalfurionEventType =
 export interface Point {
   x: number;
   y: number;
+}
+
+export interface SerializeTransform extends TransformConfig {
+  path: number[];
 }

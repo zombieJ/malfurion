@@ -28,16 +28,20 @@ const svgText = `
 </svg>
 `;
 
+const SC =
+  '[{"path":[0],"rotate":30},{"path":[0,1],"rotate":27.72411817330965},{"path":[0,1,0],"rotate":315.9457209584655,"scaleX":2.9937769231279017,"scaleY":0.5168243503792648,"translateX":62.38341114458523,"translateY":-48.54876214439338}]';
+
+const plant = new Malfurion(svgText);
+plant.debug = true;
+
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
+  const [record, setRecord] = React.useState(SC);
 
   const selection = useElementSelection();
   const hover = useElementSelection(selection.proxyRef);
 
   React.useEffect(() => {
-    const plant = new Malfurion(svgText);
-    plant.debug = true;
-
     plant.addEventListener('click', ({ target }, instance) => {
       selection.updateSelection(instance, target);
     });
@@ -115,6 +119,27 @@ export default function App() {
         TranslateX
       </button>
 
+      <button
+        type="button"
+        onClick={() => {
+          const transform = plant.serializeTransform();
+          console.log(transform);
+          setRecord(JSON.stringify(transform));
+        }}
+      >
+        Serialize
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          plant.deserializeTransform(JSON.parse(record));
+        }}
+      >
+        Deserialize
+      </button>
+
+      <br />
+
       <svg
         width={500}
         height={500}
@@ -122,7 +147,7 @@ export default function App() {
         style={{
           width: 500,
           height: 500,
-          display: 'block',
+          display: 'inline-block',
           background: 'rgba(255, 0, 0, 0.1)',
         }}
       >
@@ -137,6 +162,14 @@ export default function App() {
 
         <Selection selection={selection} />
       </svg>
+
+      <textarea
+        value={record}
+        style={{ width: 500, height: 300, verticalAlign: 'top' }}
+        onChange={e => {
+          setRecord(e.target.value);
+        }}
+      />
     </div>
   );
 }

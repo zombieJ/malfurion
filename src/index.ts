@@ -7,6 +7,8 @@ import {
   MalfurionEventHandler,
   MalfurionEventType,
   BoundingBox,
+  SerializeTransform,
+  TransformConfig,
 } from './interface';
 import Matrix from './utils/matrix';
 import { Line } from './utils/mathUtil';
@@ -432,6 +434,64 @@ class Malfurion {
         `${attributes.transform || ''} ${matrix.toString()}`,
       );
     }
+  };
+
+  serializeTransform = (): SerializeTransform[] => {
+    const list: SerializeTransform[] = [];
+    function dig(nodes: SVGNodeEntity[], parentPath: number[] = []) {
+      (nodes || []).forEach((node, index) => {
+        const { children } = node;
+        const path = [...parentPath, index];
+
+        let updated = false;
+        const record: SerializeTransform = {
+          path,
+        };
+
+        function recordIfNeeded(
+          prop: keyof TransformConfig,
+          defaultValue: any,
+        ) {
+          const val = node[prop];
+          if (val !== undefined && val !== defaultValue) {
+            record[prop] = val;
+            updated = true;
+          }
+        }
+
+        recordIfNeeded('rotate', 0);
+        recordIfNeeded('originX', DEFAULT_ORIGIN);
+        recordIfNeeded('originY', DEFAULT_ORIGIN);
+        recordIfNeeded('scaleX', 1);
+        recordIfNeeded('scaleY', 1);
+        recordIfNeeded('translateX', 0);
+        recordIfNeeded('translateY', 0);
+        recordIfNeeded('opacity', 1);
+
+        if (updated) {
+          list.push(record);
+        }
+
+        dig(children, path);
+      });
+    }
+
+    dig(this.entity.nodes);
+
+    return list;
+  };
+
+  deserializeTransform = (records: SerializeTransform[]) => {
+    records.forEach(({ path, ...restProps }) => {
+      const entity = this.getNodeEntity(path);
+      if (entity) {
+        Object.keys(restProps).forEach((prop: any) => {
+          (entity as any)[prop] = (restProps as any)[prop];
+        });
+
+        this.refresh(path);
+      }
+    });
   };
 }
 
