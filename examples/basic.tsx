@@ -22,8 +22,8 @@ const svgText = `
 <svg>
   <circle cx="80" cy="80" r="20" fill="yellow" />
   <g transform="translate(150 100) scale(1.5)">
-    <rect x="0" y="0" width="50" height="80" fill="green" />
-    <rect x="0" y="80" width="50" height="20" fill="yellow" />
+    <rect x="0" y="0" width="40" height="100" fill="green" />
+    <rect x="0" y="80" width="50" height="20" fill="yellow" opacity="0.5" />
   </g>
 </svg>
 `;
@@ -117,6 +117,16 @@ export default function App() {
         }}
       >
         TranslateX
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          selection.transformCurrentPath((instance, path) => {
+            instance.opacity(path, origin => (origin + 0.1) % 1);
+          });
+        }}
+      >
+        Opacity
       </button>
 
       <button

@@ -387,6 +387,9 @@ class Malfurion {
     value?: number | ((origin: number) => number),
   ) => this.internalTransform(path, 'translateY', 0, value);
 
+  opacity = (path: number[], value?: number | ((origin: number) => number)) =>
+    this.internalTransform(path, 'opacity', 1, value);
+
   getMatrix = (path: number[]) => {
     const entity = this.getNodeEntity(path);
 
@@ -426,13 +429,22 @@ class Malfurion {
 
     if (entity) {
       const ele = this.getElement(path);
-      const { attributes } = entity;
+      const { attributes, opacity } = entity;
       const matrix = this.getMatrix(path);
 
       ele!.setAttribute(
         'transform',
         `${attributes.transform || ''} ${matrix.toString()}`,
       );
+
+      if (opacity !== undefined) {
+        const mergedOpacity = Number(attributes.opacity || 1) * opacity;
+        ele!.setAttribute('opacity', `${mergedOpacity}`);
+      } else if (attributes.opacity) {
+        ele!.setAttribute('opacity', attributes.opacity);
+      } else {
+        ele!.removeAttribute('opacity');
+      }
     }
   };
 
