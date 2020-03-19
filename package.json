@@ -56,7 +56,8 @@
     "np": "^5.1.0",
     "prettier": "^1.18.2",
     "react": "^16.13.0",
-    "react-dom": "^16.13.0"
+    "react-dom": "^16.13.0",
+    "typescript": "^3.8.3"
   },
   "cnpm": {
     "mode": "npm"
