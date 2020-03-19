@@ -278,7 +278,10 @@ class Malfurion {
     return null;
   };
 
-  /** Return  */
+  /**
+   * Return box info with current path.
+   * This also provides current node data for quick access.
+   */
   getBox = (path: number[]): BoundingBox | null => {
     const element = this.getElement(path);
     const entity = this.getNodeEntity(path);
@@ -294,7 +297,12 @@ class Malfurion {
         ...this.getOriginBox(path),
         originX: entity.originX !== undefined ? entity.originX : DEFAULT_ORIGIN,
         originY: entity.originY !== undefined ? entity.originY : DEFAULT_ORIGIN,
+        translateX: entity.translateX || 0,
+        translateY: entity.translateY || 0,
         rotate: entity.rotate || 0,
+        opacity: entity.opacity || 1,
+        scaleX: entity.scaleX || 1,
+        scaleY: entity.scaleY || 1,
         mergedTransform,
         pureMergedTransform,
       };

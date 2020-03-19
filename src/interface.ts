@@ -12,10 +12,11 @@ export interface ShapeInfo extends SVGBox {
   originY?: number;
 }
 
-export interface BoundingBox extends ShapeInfo {
+export interface BoundingBox
+  extends Omit<ShapeInfo, 'originX' | 'originY'>,
+    Required<TransformConfig> {
   mergedTransform?: string;
   pureMergedTransform?: string;
-  rotate?: number;
 }
 
 export interface SVGNodeRecord {
