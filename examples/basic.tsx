@@ -147,6 +147,14 @@ export default function App() {
       >
         Deserialize
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          plant.reset();
+        }}
+      >
+        Reset
+      </button>
 
       <br />
 

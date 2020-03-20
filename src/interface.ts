@@ -40,6 +40,7 @@ export interface SVGNodeEntity extends SVGNodeRecord, TransformConfig {
   parent: SVGNodeEntity | null;
   children: SVGNodeEntity[];
   box: SVGBox;
+  element?: SVGElement;
 }
 
 export interface SVGEntity {

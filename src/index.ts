@@ -31,6 +31,8 @@ class Malfurion {
 
   private pathCache: PathCache = new PathCache();
 
+  private changedEntities = new Set<SVGNodeEntity>();
+
   private clickEventHandlers = new Set<MalfurionEventHandler>();
 
   private mouseEnterEventHandlers = new Set<MalfurionEventHandler>();
@@ -166,18 +168,20 @@ class Malfurion {
         path: false | number[] = [],
       ) => {
         nodes.forEach((node, index) => {
-          const { tagName, attributes, children } = node as SVGNodeEntity;
+          const entity = node as SVGNodeEntity;
+          const { tagName, attributes, children } = entity;
 
           const ele = document.createElementNS(
             'http://www.w3.org/2000/svg',
             tagName,
           );
+          entity.element = ele;
 
           // Fill path data
           const elePath = path ? [...path, index] : path;
           if (elePath) {
             ele.setAttribute('data-path', elePath.join('-'));
-            this.pathCache.set(ele, elePath, node as SVGNodeEntity);
+            this.pathCache.set(ele, elePath, entity);
           }
 
           // Attributes
@@ -357,6 +361,8 @@ class Malfurion {
 
       (entity[prop] as number) = postUpdate ? postUpdate(target) : target;
       this.refresh(path);
+
+      this.changedEntities.add(entity);
     }
 
     this.generateDebugHolder();
@@ -432,6 +438,29 @@ class Malfurion {
     });
   };
 
+  reset = () => {
+    this.changedEntities.forEach(entity => {
+      /* eslint-disable no-param-reassign */
+      delete entity.opacity;
+      delete entity.rotate;
+      delete entity.originX;
+      delete entity.originY;
+      delete entity.scaleX;
+      delete entity.scaleY;
+      delete entity.translateX;
+      delete entity.translateY;
+      delete entity.opacity;
+      /* eslint-enable no-param-reassign */
+
+      entity.element?.setAttribute(
+        'transform',
+        entity.attributes.transform || '',
+      );
+    });
+
+    this.changedEntities = new Set();
+  };
+
   refresh = (path: number[]) => {
     const entity = this.getNodeEntity(path);
 
@@ -502,6 +531,8 @@ class Malfurion {
   };
 
   deserializeTransform = (records: SerializeTransform[]) => {
+    this.reset();
+
     records.forEach(({ path, ...restProps }) => {
       const entity = this.getNodeEntity(path);
       if (entity) {
@@ -510,6 +541,7 @@ class Malfurion {
         });
 
         this.refresh(path);
+        this.changedEntities.add(entity);
       }
     });
   };

@@ -29,6 +29,8 @@ export class PathCache {
     return path ? convertStringPath(path) : null;
   };
 
+  public getEntityList = () => [...this.entityPathMap.keys()];
+
   public getPathList = () =>
     [...this.pathElementMap.keys()].map(convertStringPath);
 }
