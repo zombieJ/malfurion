@@ -71,3 +71,12 @@ export interface Point {
 export interface SerializeTransform extends TransformConfig {
   path: number[];
 }
+
+export interface HierarchyInfo {
+  path: number[];
+  id?: string;
+  originId?: string;
+  tagName: string;
+  element?: SVGElement;
+  children?: HierarchyInfo[];
+}

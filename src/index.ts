@@ -9,6 +9,7 @@ import {
   BoundingBox,
   SerializeTransform,
   TransformConfig,
+  HierarchyInfo,
 } from './interface';
 import Matrix from './utils/matrix';
 import { Line } from './utils/mathUtil';
@@ -241,6 +242,40 @@ class Malfurion {
     }
 
     return this.svg;
+  };
+
+  /** List all the svg elements */
+  getHierarchy = (): HierarchyInfo[] => {
+    const idCache = new Map<string, string>();
+
+    Object.keys(this.entity.ids).forEach(originId => {
+      idCache.set(this.entity.ids[originId], originId);
+    });
+
+    const dig = (
+      nodes: SVGNodeEntity[],
+      path: number[] = [],
+    ): HierarchyInfo[] =>
+      nodes.map(({ tagName, attributes, children = [] }, index) => {
+        const mergedPath = [...path, index];
+        const info: HierarchyInfo = {
+          path: mergedPath,
+          tagName,
+        };
+
+        if (attributes.id) {
+          info.id = attributes.id;
+          info.originId = idCache.get(attributes.id);
+        }
+
+        if (children.length) {
+          info.children = dig(children, mergedPath);
+        }
+
+        return info;
+      });
+
+    return dig(this.entity.nodes);
   };
 
   getPath = (element: any): number[] | null => this.pathCache.getPath(element);
