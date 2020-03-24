@@ -161,6 +161,8 @@ export function analysisSVG(list: any, rootRect: SVGBox): SVGEntity {
 
   entity.nodes = rootNodes;
 
+  console.warn('ANA:', entity.nodes);
+
   return entity;
 }
 

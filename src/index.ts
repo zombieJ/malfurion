@@ -327,9 +327,8 @@ class Malfurion {
    * This also provides current node data for quick access.
    */
   getBox = (path: number[]): BoundingBox | null => {
-    const element = this.getElement(path);
     const entity = this.getNodeEntity(path);
-    if (element && entity) {
+    if (entity) {
       const mergedTransform = this.getMergedTransform(path);
       const pureMergedTransform = this.getMergedTransform(path, true);
 

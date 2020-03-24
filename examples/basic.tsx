@@ -34,6 +34,8 @@ const SC =
 const plant = new Malfurion(svgText);
 plant.debug = true;
 
+console.warn('>>>', plant.getBox([0]));
+
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
   const [record, setRecord] = React.useState(SC);
