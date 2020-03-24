@@ -263,6 +263,11 @@ class Malfurion {
           tagName,
         };
 
+        const element = this.pathCache.getElement(mergedPath);
+        if (element) {
+          info.element = element as SVGElement;
+        }
+
         if (attributes.id) {
           info.id = attributes.id;
           info.originId = idCache.get(attributes.id);
