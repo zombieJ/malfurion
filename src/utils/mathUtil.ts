@@ -116,6 +116,20 @@ export class Line {
     };
   };
 
+  getPerpendicular = ({ x, y }: Point) => {
+    if (this.isVertical()) {
+      return new Line(null, null, null, y);
+    }
+
+    if (this.isHorizontal()) {
+      return new Line(null, null, x, null);
+    }
+
+    const pa = -1 / this.a!;
+    const pb = y - pa * x;
+    return new Line(pa, pb, null, null);
+  };
+
   toUnits = () => [this.a, this.b, this.x, this.y];
 
   toString = () => {
