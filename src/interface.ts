@@ -87,4 +87,8 @@ export interface HierarchyInfo {
   tagName: string;
   element?: SVGElement;
   children?: HierarchyInfo[];
+
+  // Color
+  fill?: string;
+  stroke?: string;
 }

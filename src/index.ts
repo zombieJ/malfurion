@@ -294,6 +294,14 @@ class Malfurion {
           info.children = dig(children, mergedPath);
         }
 
+        // Colors
+        if (attributes.fill) {
+          info.fill = attributes.fill;
+        }
+        if (attributes.stroke) {
+          info.stroke = attributes.stroke;
+        }
+
         return info;
       });
 
