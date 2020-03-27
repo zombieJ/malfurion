@@ -141,13 +141,34 @@ class Malfurion {
     this.svg.appendChild(this.debugHolder);
   };
 
-  getSVG = () => {
-    if (!this.svg) {
-      // Create id cache
-      const idCacheList = Object.keys(this.entity.ids)
+  private idCacheList: [string, string][] | null = null;
+
+  private getIdCacheList = () => {
+    if (!this.idCacheList) {
+      this.idCacheList = Object.keys(this.entity.ids)
         .sort((id1, id2) => id2.length - id1.length)
         .map(id => [id, this.entity.ids[id]]);
+    }
 
+    return this.idCacheList;
+  };
+
+  private replaceId = (str: string) => {
+    if (str === undefined) {
+      return str;
+    }
+
+    let replaced = str;
+    if (replaced.includes('#')) {
+      this.getIdCacheList().forEach(([id, replaceId]) => {
+        replaced = replaced.replace(`#${id}`, `#${replaceId}`);
+      });
+    }
+    return replaced;
+  };
+
+  getSVG = () => {
+    if (!this.svg) {
       if (this.debug) {
         console.time('getSVG');
       }
@@ -190,11 +211,7 @@ class Malfurion {
             let value = attributes[key];
 
             // Replace value with real id
-            if (value.includes('#')) {
-              idCacheList.forEach(([id, replaceId]) => {
-                value = value.replace(`#${id}`, `#${replaceId}`);
-              });
-            }
+            value = this.replaceId(value);
 
             if (key.includes('xlink:')) {
               ele.setAttributeNS(
@@ -501,12 +518,23 @@ class Malfurion {
       delete entity.stroke;
       /* eslint-enable no-param-reassign */
 
-      entity.element?.setAttribute(
-        'transform',
-        entity.attributes.transform || '',
-      );
-      entity.element?.setAttribute('fill', entity.attributes.fill || '');
-      entity.element?.setAttribute('stroke', entity.attributes.stroke || '');
+      function setAttribute(prop: string, value: string) {
+        if (value !== undefined) {
+          entity.element?.setAttribute(prop, value);
+        } else {
+          entity.element?.removeAttribute(prop);
+        }
+      }
+
+      // Transform
+      setAttribute('transform', entity.attributes.transform);
+
+      // Opacity
+      setAttribute('opacity', entity.attributes.opacity);
+
+      // Color
+      setAttribute('fill', this.replaceId(entity.attributes.fill));
+      setAttribute('stroke', this.replaceId(entity.attributes.stroke));
     });
 
     this.changedEntities = new Set();
@@ -563,7 +591,6 @@ class Malfurion {
           defaultValue: any,
         ) {
           const val = node[prop];
-          console.warn('>>', val, node[prop], path);
           if (val !== undefined && val !== defaultValue) {
             record[prop] = val as any;
             updated = true;
