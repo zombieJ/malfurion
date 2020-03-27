@@ -1,6 +1,17 @@
 import { SVGNodeRecord, SVGEntity, SVGNodeEntity, SVGBox } from '../interface';
 import Matrix from './matrix';
 
+function getColor(str: string = '') {
+  const { style } = new Option();
+  style.color = str;
+
+  if (style.color) {
+    return style.color;
+  }
+
+  return null;
+}
+
 export function getAttributes({
   attributes,
 }: {
@@ -19,6 +30,12 @@ interface AbstractNode {
   children?: HTMLCollection;
 }
 
+/**
+ *
+ * @param node svg element
+ * @param loopChildren only used for defs element
+ * @param postRecord some additional work
+ */
 export function getNodeRecord(
   node: AbstractNode,
   loopChildren: boolean,
@@ -31,9 +48,12 @@ export function getNodeRecord(
     );
   }
 
+  // Get attributes
+  const attributes = getAttributes(node);
+
   const record = {
     tagName: node.tagName,
-    attributes: getAttributes(node),
+    attributes,
     children: subRecords,
   };
 
@@ -81,12 +101,26 @@ export function analysisNodes(
   const nodeEntities: SVGNodeEntity[] = [];
 
   function postRecord(record: SVGNodeRecord) {
+    /* eslint-disable no-param-reassign */
+    // Replace any id content
     if (record.attributes.id) {
       const newId = `MALFURION_${uuid}`;
       entity.ids[record.attributes.id] = newId;
       record.attributes.id = newId;
       uuid += 1;
     }
+
+    // Normalize colors
+    const fillColor = getColor(record.attributes.fill);
+    if (fillColor) {
+      record.attributes.fill = fillColor;
+    }
+
+    const strokeColor = getColor(record.attributes.stroke);
+    if (strokeColor) {
+      record.attributes.stroke = strokeColor;
+    }
+    /* eslint-enable */
   }
 
   nodes.forEach(node => {

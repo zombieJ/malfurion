@@ -20,10 +20,16 @@ import Selection from './components/Selection';
 // `;
 const svgText = `
 <svg>
+  <defs>
+    <radialGradient id="myGradient">
+      <stop offset="0%"   stop-color="pink" />
+      <stop offset="100%" stop-color="black" />
+    </radialGradient>
+  </defs>
   <circle cx="80" cy="80" r="20" fill="yellow" />
   <g id="分组" transform="translate(150 100) scale(1.5)">
-    <rect id="方块1" x="0" y="0" width="40" height="100" fill="green" />
-    <rect x="0" y="80" width="50" height="20" fill="yellow" opacity="0.5" />
+    <rect id="方块1" x="0" y="0" width="40" height="100" fill="#00FF00" />
+    <rect x="0" y="80" width="50" height="20" fill="url(#myGradient)" stroke="#F00" opacity="0.5" />
   </g>
 </svg>
 `;
@@ -33,8 +39,6 @@ const SC =
 
 const plant = new Malfurion(svgText);
 plant.debug = true;
-
-console.warn('>>>', plant.getBox([0]));
 
 export default function App() {
   const svgRef = React.useRef<SVGSVGElement>(null);
