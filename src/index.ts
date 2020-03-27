@@ -348,6 +348,8 @@ class Malfurion {
         scaleY: entity.scaleY || 1,
         mergedTransform,
         pureMergedTransform,
+        fill: entity.fill,
+        stroke: entity.stroke,
       };
     }
 
@@ -386,19 +388,19 @@ class Malfurion {
   private internalTransform = (
     path: number[],
     prop: keyof SVGNodeEntity,
-    initialValue: number,
-    value?: number | ((origin: number) => number),
-    postUpdate?: (val: number) => number,
+    initialValue: number | string | null,
+    value?: number | string | ((origin: number | string) => number | string),
+    postUpdate?: (val: number | string) => number,
   ): number => {
     const entity = this.getNodeEntity(path);
 
     if (entity && value !== undefined) {
       const target =
         typeof value === 'function'
-          ? value((entity[prop] as number) || initialValue)
+          ? value((entity[prop] as any) || initialValue)
           : value;
 
-      (entity[prop] as number) = postUpdate ? postUpdate(target) : target;
+      (entity[prop] as any) = postUpdate ? postUpdate(target) : target;
       this.refresh(path);
 
       this.changedEntities.add(entity);
@@ -406,42 +408,48 @@ class Malfurion {
 
     this.generateDebugHolder();
 
-    return (entity && (entity[prop] as number)) || initialValue;
+    return (entity && (entity[prop] as any)) || initialValue;
   };
 
+  fill = (path: number[], value?: string | ((origin: string) => string)) =>
+    this.internalTransform(path, 'fill', null, value as any);
+
+  stroke = (path: number[], value?: string | ((origin: string) => string)) =>
+    this.internalTransform(path, 'stroke', null, value as any);
+
   originX = (path: number[], value?: number | ((origin: number) => number)) =>
-    this.internalTransform(path, 'originX', DEFAULT_ORIGIN, value);
+    this.internalTransform(path, 'originX', DEFAULT_ORIGIN, value as any);
 
   originY = (path: number[], value?: number | ((origin: number) => number)) =>
-    this.internalTransform(path, 'originY', DEFAULT_ORIGIN, value);
+    this.internalTransform(path, 'originY', DEFAULT_ORIGIN, value as any);
 
   rotate = (path: number[], value?: number | ((origin: number) => number)) =>
     this.internalTransform(
       path,
       'rotate',
       0,
-      value,
-      val => ((val % 360) + 360) % 360,
+      value as any,
+      (val: any) => ((val % 360) + 360) % 360,
     );
 
   scaleX = (path: number[], value?: number | ((origin: number) => number)) =>
-    this.internalTransform(path, 'scaleX', 1, value);
+    this.internalTransform(path, 'scaleX', 1, value as any);
 
   scaleY = (path: number[], value?: number | ((origin: number) => number)) =>
-    this.internalTransform(path, 'scaleY', 1, value);
+    this.internalTransform(path, 'scaleY', 1, value as any);
 
   translateX = (
     path: number[],
     value?: number | ((origin: number) => number),
-  ) => this.internalTransform(path, 'translateX', 0, value);
+  ) => this.internalTransform(path, 'translateX', 0, value as any);
 
   translateY = (
     path: number[],
     value?: number | ((origin: number) => number),
-  ) => this.internalTransform(path, 'translateY', 0, value);
+  ) => this.internalTransform(path, 'translateY', 0, value as any);
 
   opacity = (path: number[], value?: number | ((origin: number) => number)) =>
-    this.internalTransform(path, 'opacity', 1, value);
+    this.internalTransform(path, 'opacity', 1, value as any);
 
   getMatrix = (path: number[]) => {
     const entity = this.getNodeEntity(path);
@@ -489,12 +497,16 @@ class Malfurion {
       delete entity.translateX;
       delete entity.translateY;
       delete entity.opacity;
+      delete entity.fill;
+      delete entity.stroke;
       /* eslint-enable no-param-reassign */
 
       entity.element?.setAttribute(
         'transform',
         entity.attributes.transform || '',
       );
+      entity.element?.setAttribute('fill', entity.attributes.fill || '');
+      entity.element?.setAttribute('stroke', entity.attributes.stroke || '');
     });
 
     this.changedEntities = new Set();
@@ -505,14 +517,16 @@ class Malfurion {
 
     if (entity) {
       const ele = this.getElement(path);
-      const { attributes, opacity } = entity;
+      const { attributes, opacity, fill, stroke } = entity;
       const matrix = this.getMatrix(path);
 
+      // Transform
       ele!.setAttribute(
         'transform',
         `${attributes.transform || ''} ${matrix.toString()}`,
       );
 
+      // Opacity
       if (opacity !== undefined) {
         const mergedOpacity = Number(attributes.opacity || 1) * opacity;
         ele!.setAttribute('opacity', `${mergedOpacity}`);
@@ -520,6 +534,14 @@ class Malfurion {
         ele!.setAttribute('opacity', attributes.opacity);
       } else {
         ele!.removeAttribute('opacity');
+      }
+
+      // Color
+      if (fill !== undefined) {
+        ele!.setAttribute('fill', fill);
+      }
+      if (stroke !== undefined) {
+        ele!.setAttribute('stroke', stroke);
       }
     }
   };
@@ -541,8 +563,9 @@ class Malfurion {
           defaultValue: any,
         ) {
           const val = node[prop];
+          console.warn('>>', val, node[prop], path);
           if (val !== undefined && val !== defaultValue) {
-            record[prop] = val;
+            record[prop] = val as any;
             updated = true;
           }
         }
@@ -555,6 +578,8 @@ class Malfurion {
         recordIfNeeded('translateX', 0);
         recordIfNeeded('translateY', 0);
         recordIfNeeded('opacity', 1);
+        recordIfNeeded('fill', undefined);
+        recordIfNeeded('stroke', undefined);
 
         if (updated) {
           list.push(record);

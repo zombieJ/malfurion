@@ -169,6 +169,17 @@ export default function App() {
       >
         Hierarchy
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          selection.transformCurrentPath((instance, path) => {
+            instance.fill(path, 'orange');
+            instance.stroke(path, 'cyan');
+          });
+        }}
+      >
+        Random Color
+      </button>
 
       <br />
 

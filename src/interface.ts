@@ -14,9 +14,13 @@ export interface ShapeInfo extends SVGBox {
 
 export interface BoundingBox
   extends Omit<ShapeInfo, 'originX' | 'originY'>,
-    Required<TransformConfig> {
+    Omit<Required<TransformConfig>, 'fill' | 'stroke'> {
   mergedTransform?: string;
   pureMergedTransform?: string;
+
+  // Color
+  fill?: string;
+  stroke?: string;
 }
 
 export interface SVGNodeRecord {
@@ -34,6 +38,10 @@ export interface TransformConfig {
   translateX?: number;
   translateY?: number;
   opacity?: number;
+
+  // Color
+  fill?: string;
+  stroke?: string;
 }
 
 export interface SVGNodeEntity extends SVGNodeRecord, TransformConfig {
