@@ -124,7 +124,7 @@ export function analysisNodes(
   }
 
   nodes.forEach(node => {
-    const { tagName, children } = node;
+    const { tagName, children, childNodes } = node;
 
     switch (tagName) {
       case 'title':
@@ -160,6 +160,12 @@ export function analysisNodes(
             Array.from(children) as SVGGraphicsElement[],
             entity,
           );
+
+          // Handle additional text children
+          if (childNodes.length && !children.length) {
+            nodeEntity.innerHTML = node.innerHTML;
+          }
+
           nodeEntities.push(nodeEntity);
         }
     }

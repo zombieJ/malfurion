@@ -191,7 +191,7 @@ class Malfurion {
       ) => {
         nodes.forEach((node, index) => {
           const entity = node as SVGNodeEntity;
-          const { tagName, attributes, children } = entity;
+          const { tagName, attributes, children, innerHTML } = entity;
 
           const ele = document.createElementNS(
             'http://www.w3.org/2000/svg',
@@ -225,7 +225,13 @@ class Malfurion {
           });
 
           // Children
-          fillNodes(ele, children, elePath);
+          if (innerHTML) {
+            // Text children
+            ele.innerHTML = innerHTML;
+          } else {
+            // Node Children
+            fillNodes(ele, children, elePath);
+          }
 
           // Append node
           holder.appendChild(ele);

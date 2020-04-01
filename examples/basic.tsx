@@ -31,6 +31,8 @@ const svgText = `
     <rect id="方块1" x="0" y="0" width="40" height="100" fill="#00FF00" />
     <rect x="0" y="80" width="50" height="20" fill="url(#myGradient)" stroke="#F00" opacity="0.5" />
   </g>
+
+  <text x="20" y="20" dominant-baseline="hanging" text-anchor="end">fg</text>
 </svg>
 `;
 

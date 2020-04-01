@@ -49,6 +49,8 @@ export interface SVGNodeEntity extends SVGNodeRecord, TransformConfig {
   children: SVGNodeEntity[];
   box: SVGBox;
   element?: SVGElement;
+  /** Only used for element that has string children only like text element */
+  innerHTML?: string;
 }
 
 export interface SVGEntity {
